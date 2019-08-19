@@ -6,5 +6,9 @@
   },
   "type": "ionic-angular",
   "watchPatterns": [],
+<<<<<<< HEAD
   "id": "com.moodle.moodlemobile"
+=======
+  "id": "org.ehealthafrica.elearning-dev"
+>>>>>>> parent of 6d59c64b5... changed package name, hyphen is not allowed
 }
