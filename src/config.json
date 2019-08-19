@@ -1,9 +1,9 @@
 {
-    "app_id": "org.ehealthafrica.elearningdev",
-    "appname": "eLearning",
-    "desktopappname": "eLearning Desktop",
-    "versioncode": 3700,
-    "versionname": "3.7.0",
+    "app_id": "com.moodle.moodlemobile",
+    "appname": "Moodle Mobile",
+    "desktopappname": "Moodle Desktop",
+    "versioncode": 3710,
+    "versionname": "3.7.1-dev",
     "cache_update_frequency_usually": 420000,
     "cache_update_frequency_often": 1200000,
     "cache_update_frequency_sometimes": 3600000,
@@ -56,10 +56,26 @@
     },
     "wsservice": "moodle_mobile_app",
     "wsextservice": "local_mobile",
-    "demo_sites": {},
-    "customurlscheme": "elearningmobile",
-    "siteurl": "https:\/\/elearning-dev.ehealthafrica.org",
-    "sitename": "eLearning",
+    "demo_sites": {
+        "student": {
+            "url": "https:\/\/school.moodledemo.net",
+            "username": "student",
+            "password": "moodle"
+        },
+        "teacher": {
+            "url": "https:\/\/school.moodledemo.net",
+            "username": "teacher",
+            "password": "moodle"
+        }
+    },
+    "font_sizes": [
+        62.5,
+        75.89,
+        93.75
+    ],
+    "customurlscheme": "moodlemobile",
+    "siteurl": "",
+    "sitename": "",
     "multisitesdisplay": "",
     "skipssoconfirmation": false,
     "forcedefaultlanguage": false,
