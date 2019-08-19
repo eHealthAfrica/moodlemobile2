@@ -21,6 +21,7 @@ import { WebIntent } from '@ionic-native/web-intent';
 import { CoreAppProvider } from '../app';
 import { CoreDomUtilsProvider } from './dom';
 import { CoreMimetypeUtilsProvider } from './mimetype';
+import { CoreTextUtilsProvider } from './text';
 import { CoreEventsProvider } from '../events';
 import { CoreLoggerProvider } from '../logger';
 import { TranslateService } from '@ngx-translate/core';
@@ -66,8 +67,34 @@ export class CoreUtilsProvider {
             private domUtils: CoreDomUtilsProvider, logger: CoreLoggerProvider, private translate: TranslateService,
             private platform: Platform, private langProvider: CoreLangProvider, private eventsProvider: CoreEventsProvider,
             private fileOpener: FileOpener, private mimetypeUtils: CoreMimetypeUtilsProvider, private webIntent: WebIntent,
-            private wsProvider: CoreWSProvider, private zone: NgZone) {
+            private wsProvider: CoreWSProvider, private zone: NgZone, private textUtils: CoreTextUtilsProvider) {
         this.logger = logger.getInstance('CoreUtilsProvider');
+    }
+
+    /**
+     * Given an error, add an extra warning to the error message and return the new error message.
+     *
+     * @param {any} error Error object or message.
+     * @param {any} [defaultError] Message to show if the error is not a string.
+     * @return {string} New error message.
+     */
+    addDataNotDownloadedError(error: any, defaultError?: string): string {
+        let errorMessage = error;
+
+        if (error && typeof error != 'string') {
+            errorMessage = this.textUtils.getErrorMessageFromError(error);
+        }
+
+        if (typeof errorMessage != 'string') {
+            errorMessage = defaultError || '';
+        }
+
+        if (!this.isWebServiceError(error)) {
+            // Local error. Add an extra warning.
+             errorMessage += '<br><br>' + this.translate.instant('core.errorsomedatanotdownloaded');
+        }
+
+        return errorMessage;
     }
 
     /**
@@ -376,13 +403,15 @@ export class CoreUtilsProvider {
     }
 
     /**
-     * Flatten an object, moving subobjects' properties to the first level using dot notation. E.g.:
-     * {a: {b: 1, c: 2}, d: 3} -> {'a.b': 1, 'a.c': 2, d: 3}
+     * Flatten an object, moving subobjects' properties to the first level.
+     * It supports 2 notations: dot notation and square brackets.
+     * E.g.: {a: {b: 1, c: 2}, d: 3} -> {'a.b': 1, 'a.c': 2, d: 3}
      *
      * @param {object} obj Object to flatten.
-     * @return {object} Flatten object.
+     * @param {boolean} [useDotNotation] Whether to use dot notation '.' or square brackets '['.
+     * @return {object} Flattened object.
      */
-    flattenObject(obj: object): object {
+    flattenObject(obj: object, useDotNotation?: boolean): object {
         const toReturn = {};
 
         for (const name in obj) {
@@ -398,7 +427,8 @@ export class CoreUtilsProvider {
                         continue;
                     }
 
-                    toReturn[name + '.' + subName] = flatObject[subName];
+                    const newName = useDotNotation ? name + '.' + subName : name + '[' + subName + ']';
+                    toReturn[newName] = flatObject[subName];
                 }
             } else {
                 toReturn[name] = value;
@@ -1049,6 +1079,37 @@ export class CoreUtilsProvider {
         });
 
         return mapped;
+    }
+
+    /**
+     * Convert an object to a format of GET param. E.g.: {a: 1, b: 2} -> a=1&b=2
+     *
+     * @param {any} object Object to convert.
+     * @param {boolean} [removeEmpty=true] Whether to remove params whose value is null/undefined.
+     * @return {string} GET params.
+     */
+    objectToGetParams(object: any, removeEmpty: boolean = true): string {
+        // First of all, flatten the object so all properties are in the first level.
+        const flattened = this.flattenObject(object);
+        let result = '',
+            joinChar = '';
+
+        for (const name in flattened) {
+            let value = flattened[name];
+
+            if (removeEmpty && (value === null || typeof value == 'undefined')) {
+                continue;
+            }
+
+            if (typeof value == 'boolean') {
+                value = value ? 1 : 0;
+            }
+
+            result += joinChar + name + '=' + value;
+            joinChar = '&';
+        }
+
+        return result;
     }
 
     /**
