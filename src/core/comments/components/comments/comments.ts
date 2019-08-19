@@ -31,13 +31,13 @@ export class CoreCommentsCommentsComponent implements OnChanges, OnDestroy {
     @Input() component: string;
     @Input() itemId: number;
     @Input() area = '';
+    @Input() page = 0;
     @Input() title?: string;
     @Input() displaySpinner = true; // Whether to display the loading spinner.
     @Output() onLoading: EventEmitter<boolean>; // Eevent that indicates whether the component is loading data.
 
     commentsLoaded = false;
-    commentsCount: string;
-    countError = false;
+    commentsCount: number;
     disabled = false;
 
     protected updateSiteObserver;
@@ -72,7 +72,7 @@ export class CoreCommentsCommentsComponent implements OnChanges, OnDestroy {
      */
     ngOnChanges(changes: { [name: string]: SimpleChange }): void {
         // If something change, update the fields.
-        if (changes && this.commentsLoaded) {
+        if (changes) {
             this.fetchData();
         }
     }
@@ -85,27 +85,30 @@ export class CoreCommentsCommentsComponent implements OnChanges, OnDestroy {
         this.commentsLoaded = false;
         this.onLoading.emit(true);
 
-        this.commentsProvider.getCommentsCount(this.contextLevel, this.instanceId, this.component, this.itemId, this.area)
-                .then((commentsCount) => {
-            this.commentsCount = commentsCount;
-            this.countError = parseInt(this.commentsCount, 10) < 0;
-            this.commentsLoaded = true;
-            this.onLoading.emit(false);
-        });
+        this.commentsProvider.getComments(this.contextLevel, this.instanceId, this.component, this.itemId, this.area, this.page)
+            .then((comments) => {
+                this.commentsCount = comments && comments.length ? comments.length : 0;
+            }).catch(() => {
+                this.commentsCount = -1;
+            }).finally(() => {
+                this.commentsLoaded = true;
+                this.onLoading.emit(false);
+            });
     }
 
     /**
      * Opens the comments page.
      */
     openComments(): void {
-        if (!this.disabled && !this.countError) {
+        if (!this.disabled && this.commentsCount > 0) {
             // Open a new state with the interpolated contents.
             this.navCtrl.push('CoreCommentsViewerPage', {
                 contextLevel: this.contextLevel,
                 instanceId: this.instanceId,
-                componentName: this.component,
+                component: this.component,
                 itemId: this.itemId,
                 area: this.area,
+                page: this.page,
                 title: this.title,
             });
         }

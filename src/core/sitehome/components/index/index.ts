@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
 import { CoreSitesProvider } from '@providers/sites';
 import { CoreDomUtilsProvider } from '@providers/utils/dom';
 import { CoreCourseProvider } from '@core/course/providers/course';
 import { CoreCourseHelperProvider } from '@core/course/providers/helper';
 import { CoreCourseModulePrefetchDelegate } from '@core/course/providers/module-prefetch-delegate';
-import { CoreBlockCourseBlocksComponent } from '@core/block/components/course-blocks/course-blocks';
+import { CoreBlockDelegate } from '@core/block/providers/delegate';
+import { CoreBlockComponent } from '@core/block/components/block/block';
 import { CoreSite } from '@classes/site';
 
 /**
@@ -29,19 +30,21 @@ import { CoreSite } from '@classes/site';
     templateUrl: 'core-sitehome-index.html',
 })
 export class CoreSiteHomeIndexComponent implements OnInit {
-    @Input() downloadEnabled: boolean;
-    @ViewChild(CoreBlockCourseBlocksComponent) courseBlocksComponent: CoreBlockCourseBlocksComponent;
+    @ViewChildren(CoreBlockComponent) blocksComponents: QueryList<CoreBlockComponent>;
 
     dataLoaded = false;
     section: any;
     hasContent: boolean;
+    hasSupportedBlock: boolean;
     items: any[] = [];
     siteHomeId: number;
     currentSite: CoreSite;
+    blocks = [];
+    downloadEnabled: boolean;
 
     constructor(private domUtils: CoreDomUtilsProvider, sitesProvider: CoreSitesProvider,
             private courseProvider: CoreCourseProvider, private courseHelper: CoreCourseHelperProvider,
-            private prefetchDelegate: CoreCourseModulePrefetchDelegate) {
+            private prefetchDelegate: CoreCourseModulePrefetchDelegate, private blockDelegate: CoreBlockDelegate) {
         this.currentSite = sitesProvider.getCurrentSite();
         this.siteHomeId = this.currentSite.getSiteHomeId();
     }
@@ -50,6 +53,7 @@ export class CoreSiteHomeIndexComponent implements OnInit {
      * Component being initialized.
      */
     ngOnInit(): void {
+        this.downloadEnabled = !this.currentSite.isOfflineDisabled();
         this.loadContent().finally(() => {
             this.dataLoaded = true;
         });
@@ -76,15 +80,19 @@ export class CoreSiteHomeIndexComponent implements OnInit {
             promises.push(this.prefetchDelegate.invalidateModules(this.section.modules, this.siteHomeId));
         }
 
-        promises.push(this.courseBlocksComponent.invalidateBlocks());
+        if (this.courseProvider.canGetCourseBlocks()) {
+            promises.push(this.courseProvider.invalidateCourseBlocks(this.siteHomeId));
+        }
+
+        // Invalidate the blocks.
+        this.blocksComponents.forEach((blockComponent) => {
+            promises.push(blockComponent.invalidate().catch(() => {
+                // Ignore errors.
+            }));
+        });
 
         Promise.all(promises).finally(() => {
-            const p2 = [];
-
-            p2.push(this.loadContent());
-            p2.push(this.courseBlocksComponent.loadContent());
-
-            return Promise.all(p2).finally(() => {
+            this.loadContent().finally(() => {
                 refresher.complete();
             });
         });
@@ -141,6 +149,32 @@ export class CoreSiteHomeIndexComponent implements OnInit {
             this.courseProvider.logView(this.siteHomeId, undefined, undefined,
                     this.currentSite && this.currentSite.getInfo().sitename).catch(() => {
                 // Ignore errors.
+            });
+
+            // Get site home blocks.
+            const canGetBlocks = this.courseProvider.canGetCourseBlocks(),
+                promise = canGetBlocks ? this.courseProvider.getCourseBlocks(this.siteHomeId) : Promise.reject(null);
+
+            return promise.then((blocks) => {
+                this.blocks = blocks;
+                this.hasSupportedBlock = this.blockDelegate.hasSupportedBlock(blocks);
+
+            }).catch((error) => {
+                if (canGetBlocks) {
+                    this.domUtils.showErrorModal(error);
+                }
+                this.blocks = [];
+
+                // Cannot get the blocks, just show site main menu if needed.
+                const section = sections.find((section) => section.section == 0);
+                if (section && this.courseHelper.sectionHasContent(section)) {
+                    this.blocks.push({
+                        name: 'site_main_menu'
+                    });
+                    this.hasSupportedBlock = true;
+                } else {
+                    this.hasSupportedBlock = false;
+                }
             });
         }).catch((error) => {
             this.domUtils.showErrorModalDefault(error, 'core.course.couldnotloadsectioncontent', true);

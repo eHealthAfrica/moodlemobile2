@@ -1,4 +1,4 @@
-.item.core-course-module-handler.addon-mod-label-handler {
+a.core-course-module-handler.addon-mod-label-handler {
     align-items: center;
 
     &:hover {
@@ -6,14 +6,14 @@
     }
 }
 
-.md .item.core-course-module-handler.addon-mod-label-handler .item-inner {
+.md a.core-course-module-handler.addon-mod-label-handler .item-inner {
     padding-bottom: $item-md-padding-bottom;
 }
 
-.ios .item.core-course-module-handler.addon-mod-label-handler .item-inner {
+.ios a.core-course-module-handler.addon-mod-label-handler .item-inner {
     padding-bottom: $item-ios-padding-bottom;
 }
 
-.wp .item.core-course-module-handler.addon-mod-label-handler .item-inner {
+.wp a.core-course-module-handler.addon-mod-label-handler .item-inner {
     padding-bottom: $item-wp-padding-bottom;
 }

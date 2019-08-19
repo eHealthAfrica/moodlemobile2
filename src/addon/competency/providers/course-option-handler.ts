@@ -63,10 +63,10 @@ export class AddonCompetencyCourseOptionHandler implements CoreCourseOptionsHand
      * Returns the data needed to render the handler.
      *
      * @param {Injector} injector Injector.
-     * @param {number} course The course.
+     * @param {number} courseId The course ID.
      * @return {CoreCourseOptionsHandlerData|Promise<CoreCourseOptionsHandlerData>} Data or promise resolved with the data.
      */
-    getDisplayData?(injector: Injector, course: any): CoreCourseOptionsHandlerData | Promise<CoreCourseOptionsHandlerData> {
+    getDisplayData?(injector: Injector, courseId: number): CoreCourseOptionsHandlerData | Promise<CoreCourseOptionsHandlerData> {
         return {
             title: 'addon.competency.competencies',
             class: 'addon-competency-course-handler',

@@ -261,38 +261,6 @@ export class CoreLoginHelperProvider {
     }
 
     /**
-     * Helper function to act when the forgotten password is clicked.
-     *
-     * @param {NavController} navCtrl NavController to use to navigate.
-     * @param {string} siteUrl Site URL.
-     * @param {string} username Username.
-     * @param {any} [siteConfig] Site config.
-     */
-    forgottenPasswordClicked(navCtrl: NavController, siteUrl: string, username: string, siteConfig?: any): void {
-        if (siteConfig && siteConfig.forgottenpasswordurl) {
-            // URL set, open it.
-            this.utils.openInApp(siteConfig.forgottenpasswordurl);
-
-            return;
-        }
-
-        // Check if password reset can be done through the app.
-        const modal = this.domUtils.showModalLoading();
-
-        this.canRequestPasswordReset(siteUrl).then((canReset) => {
-            if (canReset) {
-                navCtrl.push('CoreLoginForgottenPasswordPage', {
-                    siteUrl: siteUrl, username: username
-                });
-            } else {
-                this.openForgottenPassword(siteUrl);
-            }
-        }).finally(() => {
-            modal.dismiss();
-        });
-    }
-
-    /**
      * Format profile fields, filtering the ones that shouldn't be shown on signup and classifying them in categories.
      *
      * @param {any[]} profileFields Profile fields to format.
@@ -661,7 +629,7 @@ export class CoreLoginHelperProvider {
      * @param {string} page Name of the page to load.
      * @param {any} params Params to pass to the page.
      */
-    loadPageInMainMenu(page: string, params: any): void {
+    protected loadPageInMainMenu(page: string, params: any): void {
         if (!this.appProvider.isMainMenuOpen()) {
             // Main menu not open. Store the page to be loaded later.
             this.pageToLoad = {
@@ -1029,81 +997,34 @@ export class CoreLoginHelperProvider {
      * @param {string} message The warning message.
      */
     protected showLegacyNoticeModal(message: string): void {
-        let link;
-
-        if (this.appProvider.isWindows()) {
-            link = 'https://download.moodle.org/desktop/download.php?platform=windows&version=342';
-        } else if (this.appProvider.isLinux()) {
-            link = 'https://download.moodle.org/desktop/download.php?platform=linux&version=342&arch=' +
-                    (this.appProvider.is64Bits() ? '64' : '32');
-        } else if (this.platform.is('android')) {
-            link = 'market://details?id=com.moodle.classic';
-        } else if (this.platform.is('ios')) {
-            link = 'itms-apps://itunes.apple.com/app/id1403448117';
-        }
-
-        this.showDownloadAppNoticeModal(message, link);
-    }
-
-    /**
-     * Show a modal warning the user that he should use the Workplace app.
-     *
-     * @param {string} message The warning message.
-     */
-    protected showWorkplaceNoticeModal(message: string): void {
-        let link;
-
-        if (this.platform.is('android')) {
-            link = 'market://details?id=com.moodle.workplace';
-        } else if (this.platform.is('ios')) {
-            link = 'itms-apps://itunes.apple.com/app/id1470929705';
-        }
-
-        this.showDownloadAppNoticeModal(message, link);
-    }
-
-    /**
-     * Show a modal warning the user that he should use the current Moodle app.
-     *
-     * @param {string} message The warning message.
-     */
-    protected showMoodleAppNoticeModal(message: string): void {
-        let link;
-
-        if (this.appProvider.isWindows()) {
-            link = 'https://download.moodle.org/desktop/download.php?platform=windows';
-        } else if (this.appProvider.isLinux()) {
-            link = 'https://download.moodle.org/desktop/download.php?platform=linux&arch=' +
-                    (this.appProvider.is64Bits() ? '64' : '32');
-        } else if (this.appProvider.isMac()) {
-            link = 'itms-apps://itunes.apple.com/app/id1255924440';
-        } else if (this.platform.is('android')) {
-            link = 'market://details?id=com.moodle.moodlemobile';
-        } else if (this.platform.is('ios')) {
-            link = 'itms-apps://itunes.apple.com/app/id633359593';
-        }
-
-        this.showDownloadAppNoticeModal(message, link);
-    }
-
-    /**
-     * Show a modal warning the user that he should use a different app.
-     *
-     * @param {string} message The warning message.
-     * @param {string} link Link to the app to download if any.
-     */
-    protected showDownloadAppNoticeModal(message: string, link?: string): void {
-        const buttons: any[] = [
+        const isAndroid = this.platform.is('android'),
+            isIOS = this.platform.is('ios'),
+            isWindows = this.appProvider.isWindows(),
+            isLinux = this.appProvider.isLinux(),
+            buttons: any[] = [
                 {
                     text: this.translate.instant('core.ok'),
                     role: 'cancel'
                 }
             ];
 
-        if (link) {
+        if (isAndroid || isIOS || isWindows || isLinux) {
             buttons.push({
                 text: this.translate.instant('core.download'),
                 handler: (): void => {
+                    let link;
+
+                    if (isWindows) {
+                        link = 'https://download.moodle.org/desktop/download.php?platform=windows&version=342';
+                    } else if (isLinux) {
+                        link = 'https://download.moodle.org/desktop/download.php?platform=linux&version=342&arch=' +
+                                (this.appProvider.is64Bits() ? '64' : '32');
+                    } else if (isAndroid) {
+                        link = 'market://details?id=com.moodle.classic';
+                    } else {
+                        link = 'itms-apps://itunes.apple.com/app/id1403448117';
+                    }
+
                     this.utils.openInBrowser(link);
                 }
             });
@@ -1115,8 +1036,7 @@ export class CoreLoginHelperProvider {
             });
 
         alert.present().then(() => {
-            const isDevice = this.platform.is('android') || this.platform.is('ios');
-            if (!isDevice) {
+            if (!isAndroid && !isIOS) {
                 // Treat all anchors so they don't override the app.
                 const alertMessageEl: HTMLElement = alert.pageRef().nativeElement.querySelector('.alert-message');
                 this.domUtils.treatAnchors(alertMessageEl);
@@ -1227,10 +1147,6 @@ export class CoreLoginHelperProvider {
             this.showNotConfirmedModal(siteUrl, undefined, username, password);
         } else if (error.errorcode == 'legacymoodleversion') {
             this.showLegacyNoticeModal(this.textUtils.getErrorMessageFromError(error));
-        } else if (error.errorcode == 'connecttomoodleapp') {
-            this.showMoodleAppNoticeModal(this.textUtils.getErrorMessageFromError(error));
-        } else if (error.errorcode == 'connecttoworkplaceapp') {
-            this.showWorkplaceNoticeModal(this.textUtils.getErrorMessageFromError(error));
         } else {
             this.domUtils.showErrorModal(error);
         }

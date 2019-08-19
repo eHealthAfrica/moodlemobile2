@@ -255,7 +255,7 @@ export class AddonModForumPrefetchHandler extends CoreCourseActivityPrefetchHand
             }
 
             // Activity uses groups, prefetch allowed groups.
-            return this.groupsProvider.getActivityAllowedGroups(forum.cmid).then((result) => {
+            return this.groupsProvider.getActivityAllowedGroups(forum.cmid).then((groups) => {
                 if (mode === CoreGroupsProvider.SEPARATEGROUPS) {
                     // Groups are already filtered by WS. Prefetch canAddDiscussionToAll to determine if user can pin/attach.
                     return this.forumProvider.canAddDiscussionToAll(forum.id).catch(() => {
@@ -278,7 +278,7 @@ export class AddonModForumPrefetchHandler extends CoreCourseActivityPrefetchHand
 
                         // The user can't post to all groups, let's check which groups he can post to.
                         const groupPromises = [];
-                        result.groups.forEach((group) => {
+                        groups.forEach((group) => {
                             groupPromises.push(this.forumProvider.canAddDiscussion(forum.id, group.id).catch(() => {
                                 // Ignore errors.
                             }));

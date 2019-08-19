@@ -22,7 +22,6 @@ import { TranslateService } from '@ngx-translate/core';
 import { CoreTextUtilsProvider } from './text';
 import { CoreAppProvider } from '../app';
 import { CoreConfigProvider } from '../config';
-import { CoreConfigConstants } from '../../configconstants';
 import { CoreUrlUtilsProvider } from './url';
 import { CoreFileProvider } from '@providers/file';
 import { CoreConstants } from '@core/constants';
@@ -74,10 +73,6 @@ export class CoreDomUtilsProvider {
         // Check if debug messages should be displayed.
         configProvider.get(CoreConstants.SETTINGS_DEBUG_DISPLAY, false).then((debugDisplay) => {
             this.debugDisplay = !!debugDisplay;
-        });
-        // Set the font size based on user preference.
-        configProvider.get(CoreConstants.SETTINGS_FONT_SIZE, CoreConfigConstants.font_sizes[0]).then((fontSize) => {
-            document.documentElement.style.fontSize = fontSize + '%';
         });
     }
 
@@ -326,33 +321,6 @@ export class CoreDomUtilsProvider {
         });
 
         return urls;
-    }
-
-    /**
-     * Fix syntax errors in HTML.
-     *
-     * @param {string} html HTML text.
-     * @return {string} Fixed HTML text.
-     */
-    fixHtml(html: string): string {
-        this.template.innerHTML = html;
-
-        const attrNameRegExp = /[^\x00-\x20\x7F-\x9F"'>\/=]+/;
-
-        const fixElement = (element: Element): void => {
-            // Remove attributes with an invalid name.
-            Array.from(element.attributes).forEach((attr) => {
-                if (!attrNameRegExp.test(attr.name)) {
-                    element.removeAttributeNode(attr);
-                }
-            });
-
-            Array.from(element.children).forEach(fixElement);
-        };
-
-        Array.from(this.template.content.children).forEach(fixElement);
-
-        return this.template.innerHTML;
     }
 
     /**
@@ -628,64 +596,6 @@ export class CoreDomUtilsProvider {
         }
 
         return this.textUtils.decodeHTML(this.translate.instant('core.error'));
-    }
-
-    /**
-     * Get the error message from an error, including debug data if needed.
-     *
-     * @param {any} error Message to show.
-     * @param {boolean} [needsTranslate] Whether the error needs to be translated.
-     * @return {string} Error message, null if no error should be displayed.
-     */
-    getErrorMessage(error: any, needsTranslate?: boolean): string {
-        let extraInfo = '';
-
-        if (typeof error == 'object') {
-            if (this.debugDisplay) {
-                // Get the debug info. Escape the HTML so it is displayed as it is in the view.
-                if (error.debuginfo) {
-                    extraInfo = '<br><br>' + this.textUtils.escapeHTML(error.debuginfo);
-                }
-                if (error.backtrace) {
-                    extraInfo += '<br><br>' + this.textUtils.replaceNewLines(this.textUtils.escapeHTML(error.backtrace), '<br>');
-                }
-
-                // tslint:disable-next-line
-                console.error(error);
-            }
-
-            // We received an object instead of a string. Search for common properties.
-            if (error.coreCanceled) {
-                // It's a canceled error, don't display an error.
-                return null;
-            }
-
-            error = this.textUtils.getErrorMessageFromError(error);
-            if (!error) {
-                // No common properties found, just stringify it.
-                error = JSON.stringify(error);
-                extraInfo = ''; // No need to add extra info because it's already in the error.
-            }
-
-            // Try to remove tokens from the contents.
-            const matches = error.match(/token"?[=|:]"?(\w*)/, '');
-            if (matches && matches[1]) {
-                error = error.replace(new RegExp(matches[1], 'g'), 'secret');
-            }
-        }
-
-        if (error == CoreConstants.DONT_SHOW_ERROR) {
-            // The error shouldn't be shown, stop.
-            return null;
-        }
-
-        let message = this.textUtils.decodeHTML(needsTranslate ? this.translate.instant(error) : error);
-
-        if (extraInfo) {
-            message += extraInfo;
-        }
-
-        return message;
     }
 
     /**
@@ -1228,11 +1138,51 @@ export class CoreDomUtilsProvider {
      * @return {Promise<Alert>} Promise resolved with the alert modal.
      */
     showErrorModal(error: any, needsTranslate?: boolean, autocloseTime?: number): Promise<Alert> {
-        const message = this.getErrorMessage(error, needsTranslate);
+        let extraInfo = '';
 
-        if (message === null) {
-            // Message doesn't need to be displayed, stop.
-            return Promise.resolve(null);
+        if (typeof error == 'object') {
+            if (this.debugDisplay) {
+                // Get the debug info. Escape the HTML so it is displayed as it is in the view.
+                if (error.debuginfo) {
+                    extraInfo = '<br><br>' + this.textUtils.escapeHTML(error.debuginfo);
+                }
+                if (error.backtrace) {
+                    extraInfo += '<br><br>' + this.textUtils.replaceNewLines(this.textUtils.escapeHTML(error.backtrace), '<br>');
+                }
+
+                // tslint:disable-next-line
+                console.error(error);
+            }
+
+            // We received an object instead of a string. Search for common properties.
+            if (error.coreCanceled) {
+                // It's a canceled error, don't display an error.
+                return;
+            }
+
+            error = this.textUtils.getErrorMessageFromError(error);
+            if (!error) {
+                // No common properties found, just stringify it.
+                error = JSON.stringify(error);
+                extraInfo = ''; // No need to add extra info because it's already in the error.
+            }
+
+            // Try to remove tokens from the contents.
+            const matches = error.match(/token"?[=|:]"?(\w*)/, '');
+            if (matches && matches[1]) {
+                error = error.replace(new RegExp(matches[1], 'g'), 'secret');
+            }
+        }
+
+        if (error == CoreConstants.DONT_SHOW_ERROR) {
+            // The error shouldn't be shown, stop.
+            return;
+        }
+
+        let message = this.textUtils.decodeHTML(needsTranslate ? this.translate.instant(error) : error);
+
+        if (extraInfo) {
+            message += extraInfo;
         }
 
         return this.showAlert(this.getErrorTitle(message), message, undefined, autocloseTime);
@@ -1394,12 +1344,9 @@ export class CoreDomUtilsProvider {
      * @param {boolean} [needsTranslate] Whether the 'text' needs to be translated.
      * @param {number} [duration=2000] Duration in ms of the dimissable toast.
      * @param {string} [cssClass=""] Class to add to the toast.
-     * @param {boolean} [dismissOnPageChange=true] Dismiss the Toast on page change.
      * @return {Toast} Toast instance.
      */
-    showToast(text: string, needsTranslate?: boolean, duration: number = 2000, cssClass: string = '',
-            dismissOnPageChange: boolean = true): Toast {
-
+    showToast(text: string, needsTranslate?: boolean, duration: number = 2000, cssClass: string = ''): Toast {
         if (needsTranslate) {
             text = this.translate.instant(text);
         }
@@ -1409,7 +1356,7 @@ export class CoreDomUtilsProvider {
             duration: duration,
             position: 'bottom',
             cssClass: cssClass,
-            dismissOnPageChange: dismissOnPageChange
+            dismissOnPageChange: true
         });
 
         loader.present();

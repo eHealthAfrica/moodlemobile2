@@ -27,7 +27,6 @@ import { AddonModGlossarySyncCronHandler } from './providers/sync-cron-handler';
 import { AddonModGlossaryIndexLinkHandler } from './providers/index-link-handler';
 import { AddonModGlossaryEntryLinkHandler } from './providers/entry-link-handler';
 import { AddonModGlossaryListLinkHandler } from './providers/list-link-handler';
-import { AddonModGlossaryEditLinkHandler } from './providers/edit-link-handler';
 import { AddonModGlossaryComponentsModule } from './components/components.module';
 import { CoreUpdateManagerProvider } from '@providers/update-manager';
 
@@ -55,8 +54,7 @@ export const ADDON_MOD_GLOSSARY_PROVIDERS: any[] = [
         AddonModGlossarySyncCronHandler,
         AddonModGlossaryIndexLinkHandler,
         AddonModGlossaryEntryLinkHandler,
-        AddonModGlossaryListLinkHandler,
-        AddonModGlossaryEditLinkHandler
+        AddonModGlossaryListLinkHandler
     ]
 })
 export class AddonModGlossaryModule {
@@ -64,8 +62,7 @@ export class AddonModGlossaryModule {
             prefetchDelegate: CoreCourseModulePrefetchDelegate, prefetchHandler: AddonModGlossaryPrefetchHandler,
             cronDelegate: CoreCronDelegate, syncHandler: AddonModGlossarySyncCronHandler, linksDelegate: CoreContentLinksDelegate,
             indexHandler: AddonModGlossaryIndexLinkHandler, discussionHandler: AddonModGlossaryEntryLinkHandler,
-            updateManager: CoreUpdateManagerProvider, listLinkHandler: AddonModGlossaryListLinkHandler,
-            editLinkHandler: AddonModGlossaryEditLinkHandler) {
+            updateManager: CoreUpdateManagerProvider, listLinkHandler: AddonModGlossaryListLinkHandler) {
 
         moduleDelegate.registerHandler(moduleHandler);
         prefetchDelegate.registerHandler(prefetchHandler);
@@ -73,7 +70,6 @@ export class AddonModGlossaryModule {
         linksDelegate.registerHandler(indexHandler);
         linksDelegate.registerHandler(discussionHandler);
         linksDelegate.registerHandler(listLinkHandler);
-        linksDelegate.registerHandler(editLinkHandler);
 
         // Allow migrating the tables from the old app to the new schema.
         updateManager.registerSiteTableMigration({

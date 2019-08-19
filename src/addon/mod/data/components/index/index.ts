@@ -226,9 +226,16 @@ export class AddonModDataIndexComponent extends CoreCourseModuleMainActivityComp
             canSearch = true;
             canAdd = accessData.canaddentry;
 
-            return this.groupsProvider.getActivityGroupInfo(this.data.coursemodule).then((groupInfo) => {
+            return this.groupsProvider.getActivityGroupInfo(this.data.coursemodule, accessData.canmanageentries)
+                    .then((groupInfo) => {
                 this.groupInfo = groupInfo;
-                this.selectedGroup = this.groupsProvider.validateGroupId(this.selectedGroup, groupInfo);
+
+                // Check selected group is accessible.
+                if (groupInfo && groupInfo.groups && groupInfo.groups.length > 0) {
+                    if (!groupInfo.groups.some((group) => this.selectedGroup == group.id)) {
+                        this.selectedGroup = groupInfo.groups[0].id;
+                    }
+                }
             });
         }).then(() => {
             return this.dataProvider.getFields(this.data.id).then((fields) => {
@@ -292,14 +299,14 @@ export class AddonModDataIndexComponent extends CoreCourseModuleMainActivityComp
             if (!this.isEmpty) {
                 this.entries = entries.offlineEntries.concat(entries.entries);
 
-                let entriesHTML = this.dataHelper.getTemplate(this.data, 'listtemplateheader', this.fieldsArray);
+                let entriesHTML = this.data.listtemplateheader || '';
 
                 // Get first entry from the whole list.
                 if (!this.search.searching || !this.firstEntry) {
                     this.firstEntry = this.entries[0].id;
                 }
 
-                const template = this.dataHelper.getTemplate(this.data, 'listtemplate', this.fieldsArray);
+                const template = this.data.listtemplate || this.dataHelper.getDefaultTemplate('list', this.fieldsArray);
 
                 const entriesById = {};
                 this.entries.forEach((entry, index) => {
@@ -311,7 +318,7 @@ export class AddonModDataIndexComponent extends CoreCourseModuleMainActivityComp
 
                     entriesHTML += this.dataHelper.displayShowFields(template, this.fieldsArray, entry, offset, 'list',  actions);
                 });
-                entriesHTML += this.dataHelper.getTemplate(this.data, 'listtemplatefooter', this.fieldsArray);
+                entriesHTML += this.data.listtemplatefooter || '';
 
                 this.entriesRendered = entriesHTML;
 

@@ -39,12 +39,6 @@ export interface CoreGroupInfo {
      * @type {boolean}
      */
     visibleGroups?: boolean;
-
-    /**
-     * The group ID to use by default. If all participants is visible, 0 will be used. First group ID otherwise.
-     * @type {number}
-     */
-    defaultGroupId?: number;
 }
 
 /*
@@ -109,7 +103,7 @@ export class CoreGroupsProvider {
                     return Promise.reject(null);
                 }
 
-                return response;
+                return response.groups;
             });
         });
     }
@@ -144,9 +138,7 @@ export class CoreGroupsProvider {
                 return this.getActivityAllowedGroups(cmId, userId, siteId, ignoreCache);
             }
 
-            return {
-                groups: []
-            };
+            return [];
         });
     }
 
@@ -154,13 +146,13 @@ export class CoreGroupsProvider {
      * Helper function to get activity group info (group mode and list of groups).
      *
      * @param {number} cmId Course module ID.
-     * @param {boolean} [addAllParts] Deprecated.
+     * @param {boolean} [addAllParts=true] Whether to add the all participants option. Always true for visible groups.
      * @param {number} [userId] User ID. If not defined, use current user.
      * @param {string} [siteId] Site ID. If not defined, current site.
      * @param {boolean} [ignoreCache] True if it should ignore cached data (it will always fail in offline or server down).
      * @return {Promise<CoreGroupInfo>} Promise resolved with the group info.
      */
-    getActivityGroupInfo(cmId: number, addAllParts?: boolean, userId?: number, siteId?: string, ignoreCache?: boolean)
+    getActivityGroupInfo(cmId: number, addAllParts: boolean = true, userId?: number, siteId?: string, ignoreCache?: boolean)
             : Promise<CoreGroupInfo> {
 
         const groupInfo: CoreGroupInfo = {
@@ -175,25 +167,16 @@ export class CoreGroupsProvider {
                 return this.getActivityAllowedGroups(cmId, userId, siteId, ignoreCache);
             }
 
-            return {
-                groups: [],
-                canaccessallgroups: false
-            };
-        }).then((result) => {
-            if (result.groups.length <= 0) {
+            return [];
+        }).then((groups) => {
+            if (groups.length <= 0) {
                 groupInfo.separateGroups = false;
                 groupInfo.visibleGroups = false;
-                groupInfo.defaultGroupId = 0;
             } else {
-                // The "canaccessallgroups" field was added in 3.4. Add all participants for visible groups in previous versions.
-                if (result.canaccessallgroups || (typeof result.canaccessallgroups == 'undefined' && groupInfo.visibleGroups)) {
+                if (addAllParts || groupInfo.visibleGroups) {
                     groupInfo.groups.push({ id: 0, name: this.translate.instant('core.allparticipants') });
-                    groupInfo.defaultGroupId = 0;
-                } else {
-                    groupInfo.defaultGroupId = result.groups[0].id;
                 }
-
-                groupInfo.groups = groupInfo.groups.concat(result.groups);
+                groupInfo.groups = groupInfo.groups.concat(groups);
             }
 
             return groupInfo;
@@ -433,23 +416,5 @@ export class CoreGroupsProvider {
 
             return site.invalidateWsCacheForKey(this.getUserGroupsInCourseCacheKey(courseId, userId));
         });
-    }
-
-    /**
-     * Validate a group ID. If the group is not visible by the user, it will return the first group ID.
-     *
-     * @param {number} groupId Group ID to validate.
-     * @param {CoreGroupInfo} groupInfo Group info.
-     * @return {number} Group ID to use.
-     */
-    validateGroupId(groupId: number, groupInfo: CoreGroupInfo): number {
-        if (groupId > 0 && groupInfo && groupInfo.groups && groupInfo.groups.length > 0) {
-            // Check if the group is in the list of groups.
-            if (groupInfo.groups.some((group) => groupId == group.id)) {
-                return groupId;
-            }
-        }
-
-        return groupInfo.defaultGroupId;
     }
 }

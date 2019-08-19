@@ -14,7 +14,7 @@
 
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterContentInit, OnDestroy, Optional }
     from '@angular/core';
-import { TextInput, Content, Platform, Slides } from 'ionic-angular';
+import { TextInput, Content, Platform } from 'ionic-angular';
 import { CoreSitesProvider } from '@providers/sites';
 import { CoreFilepoolProvider } from '@providers/filepool';
 import { CoreDomUtilsProvider } from '@providers/utils/dom';
@@ -56,9 +56,11 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
 
     @ViewChild('editor') editor: ElementRef; // WYSIWYG editor.
     @ViewChild('textarea') textarea: TextInput; // Textarea editor.
+    @ViewChild('decorate') decorate: ElementRef; // Buttons.
 
     protected element: HTMLDivElement;
     protected editorElement: HTMLDivElement;
+    protected resizeFunction;
     protected kbHeight = 0; // Last known keyboard height.
     protected minHeight = 200; // Minimum height of the editor.
 
@@ -68,31 +70,6 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
 
     rteEnabled = false;
     editorSupported = true;
-
-    // Toolbar.
-    @ViewChild('toolbar') toolbar: ElementRef;
-    @ViewChild(Slides) toolbarSlides: Slides;
-    isPhone = this.platform.is('mobile') && !this.platform.is('tablet');
-    toolbarHidden = this.isPhone;
-    numToolbarButtons = 6;
-    toolbarArrows = false;
-    toolbarPrevHidden = true;
-    toolbarNextHidden = false;
-    toolbarStyles = {
-        b: 'false',
-        i: 'false',
-        u: 'false',
-        strike: 'false',
-        p: 'false',
-        h1: 'false',
-        h2: 'false',
-        h3: 'false',
-        ul: 'false',
-        ol: 'false',
-    };
-    protected isCurrentView = true;
-    protected toolbarButtonWidth = 40;
-    protected toolbarArrowWidth = 28;
 
     constructor(private domUtils: CoreDomUtilsProvider, private urlUtils: CoreUrlUtilsProvider,
             private sitesProvider: CoreSitesProvider, private filepoolProvider: CoreFilepoolProvider,
@@ -129,8 +106,8 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
         // Use paragraph on enter.
         document.execCommand('DefaultParagraphSeparator', false, 'p');
 
-        window.addEventListener('resize', this.maximizeEditorSize);
-        document.addEventListener('selectionchange', this.updateToolbarStyles);
+        this.resizeFunction = this.maximizeEditorSize.bind(this);
+        window.addEventListener('resize', this.resizeFunction);
 
         let i = 0;
         this.initHeightInterval = setInterval(() => {
@@ -146,8 +123,6 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
             this.kbHeight = kbHeight;
             this.maximizeEditorSize();
         });
-
-        this.updateToolbarButtons();
     }
 
     /**
@@ -155,17 +130,13 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
      *
      * @return {Promise<number>} Resolved with calculated editor size.
      */
-    protected maximizeEditorSize = (): Promise<number> => {
+    protected maximizeEditorSize(): Promise<number> {
         this.content.resize();
 
         const deferred = this.utils.promiseDefer();
 
         setTimeout(() => {
-            let contentVisibleHeight = this.domUtils.getContentHeight(this.content);
-            if (!this.platform.is('android')) {
-                // In Android we ignore the keyboard height because it is not part of the web view.
-                contentVisibleHeight -= this.kbHeight;
-            }
+            const contentVisibleHeight = this.domUtils.getContentHeight(this.content) - this.kbHeight;
 
             if (contentVisibleHeight <= 0) {
                 deferred.resolve(0);
@@ -178,7 +149,7 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
                 let height;
 
                 if (this.platform.is('android')) {
-                    // In Android we ignore the keyboard height because it is not part of the web view.
+                    // Android, ignore keyboard height because web view is resized.
                     height = this.domUtils.getContentHeight(this.content) - this.getSurroundingHeight(this.element);
                 } else if (this.platform.is('ios') && this.kbHeight > 0) {
                     // Keyboard open in iOS.
@@ -415,16 +386,13 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
         this.rteEnabled = !this.rteEnabled;
 
         // Set focus and cursor at the end.
-        // Modify the DOM directly so the keyboard stays open.
-        if (this.rteEnabled) {
-            this.editorElement.removeAttribute('hidden');
-            this.textarea.getNativeElement().setAttribute('hidden', '');
-            this.editorElement.focus();
-        } else {
-            this.editorElement.setAttribute('hidden', '');
-            this.textarea.getNativeElement().removeAttribute('hidden');
-            this.textarea.setFocus();
-        }
+        setTimeout(() => {
+            if (this.rteEnabled) {
+                this.editorElement.focus();
+            } else {
+                this.textarea.setFocus();
+            }
+        });
     }
 
     /**
@@ -533,8 +501,9 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
      * @param {any} $event Event data
      * @param {string} command Command to execute.
      */
-    buttonAction($event: any, command: string): void {
-        this.stopBubble($event);
+    protected buttonAction($event: any, command: string): void {
+        $event.preventDefault();
+        $event.stopPropagation();
 
         if (command) {
             if (command.includes('|')) {
@@ -549,148 +518,11 @@ export class CoreRichTextEditorComponent implements AfterContentInit, OnDestroy 
     }
 
     /**
-     * Hide the toolbar.
-     */
-    hideToolbar($event: any): void {
-        this.stopBubble($event);
-
-        this.toolbarHidden = true;
-    }
-
-    /**
-     * Show the toolbar.
-     */
-    showToolbar(): void {
-        this.editorElement.focus();
-        this.toolbarHidden = false;
-    }
-
-    /**
-     * Stop event default and propagation.
-     *
-     * @param {Event} event Event.
-     */
-    stopBubble(event: Event): void {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-
-    /**
-     * Method that shows the next toolbar buttons.
-     */
-    toolbarNext($event: any): void {
-        this.stopBubble($event);
-
-        if (!this.toolbarNextHidden) {
-            const currentIndex = this.toolbarSlides.getActiveIndex() || 0;
-            this.toolbarSlides.slideTo(currentIndex + this.numToolbarButtons);
-        }
-    }
-
-    /**
-     * Method that shows the previous toolbar buttons.
-     */
-    toolbarPrev($event: any): void {
-        this.stopBubble($event);
-
-        if (!this.toolbarPrevHidden) {
-            const currentIndex = this.toolbarSlides.getActiveIndex() || 0;
-            this.toolbarSlides.slideTo(currentIndex - this.numToolbarButtons);
-        }
-    }
-
-    /**
-     * Update the number of toolbar buttons displayed.
-     */
-    updateToolbarButtons(): void {
-        if (!this.isCurrentView) {
-            // Don't calculate if component isn't in current view, the calculations are wrong.
-            return;
-        }
-
-        const width = this.domUtils.getElementWidth(this.toolbar.nativeElement);
-
-        if (!(this.toolbarSlides as any)._init || !width) {
-            // Slides is not initialized or width is not available yet, try later.
-            setTimeout(this.updateToolbarButtons.bind(this), 100);
-
-            return;
-        }
-
-        if (width > this.toolbarSlides.length() * this.toolbarButtonWidth) {
-            this.numToolbarButtons = this.toolbarSlides.length();
-            this.toolbarArrows = false;
-        } else {
-            this.numToolbarButtons = Math.floor((width - this.toolbarArrowWidth * 2) / this.toolbarButtonWidth);
-            this.toolbarArrows = true;
-        }
-
-        this.toolbarSlides.update();
-
-        this.updateToolbarArrows();
-    }
-
-    /**
-     * Show or hide next/previous toolbar arrows.
-     */
-    updateToolbarArrows(): void {
-        const currentIndex = this.toolbarSlides.getActiveIndex() || 0;
-        this.toolbarPrevHidden = currentIndex <= 0;
-        this.toolbarNextHidden = currentIndex + this.numToolbarButtons >= this.toolbarSlides.length();
-    }
-
-    /**
-     * Update highlighted toolbar styles.
-     */
-    updateToolbarStyles = (): void => {
-        const node = document.getSelection().focusNode;
-        if (!node) {
-            return;
-        }
-
-        let element = node.nodeType == 1 ? node as HTMLElement : node.parentElement;
-        const styles = {};
-
-        while (element != null && element !== this.editorElement) {
-            const tagName = element.tagName.toLowerCase();
-            if (this.toolbarStyles[tagName]) {
-                styles[tagName] = 'true';
-            }
-            element = element.parentElement;
-        }
-
-        for (const tagName in this.toolbarStyles) {
-            this.toolbarStyles[tagName] = 'false';
-        }
-
-        if (element === this.editorElement) {
-            Object.assign(this.toolbarStyles, styles);
-        }
-    }
-
-    /**
-     * User entered the page that contains the component.
-     */
-    ionViewDidEnter(): void {
-        this.isCurrentView = true;
-
-        this.updateToolbarButtons();
-    }
-
-    /**
-     * User left the page that contains the component.
-     */
-    ionViewDidLeave(): void {
-        this.isCurrentView = false;
-    }
-
-    /**
      * Component being destroyed.
      */
     ngOnDestroy(): void {
         this.valueChangeSubscription && this.valueChangeSubscription.unsubscribe();
-        window.removeEventListener('resize', this.maximizeEditorSize);
-        document.removeEventListener('selectionchange', this.updateToolbarStyles);
+        window.removeEventListener('resize', this.resizeFunction);
         clearInterval(this.initHeightInterval);
         this.keyboardObs && this.keyboardObs.off();
     }

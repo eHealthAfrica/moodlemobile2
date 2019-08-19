@@ -131,9 +131,16 @@ export class AddonModDataEditPage {
             return this.dataProvider.getDatabaseAccessInformation(data.id);
         }).then((accessData) => {
             if (this.entryId) {
-                return this.groupsProvider.getActivityGroupInfo(this.data.coursemodule).then((groupInfo) => {
+                return this.groupsProvider.getActivityGroupInfo(this.data.coursemodule, accessData.canmanageentries)
+                        .then((groupInfo) => {
                     this.groupInfo = groupInfo;
-                    this.selectedGroup = this.groupsProvider.validateGroupId(this.selectedGroup, groupInfo);
+
+                    // Check selected group is accessible.
+                    if (groupInfo && groupInfo.groups && groupInfo.groups.length > 0) {
+                        if (!groupInfo.groups.some((group) => this.selectedGroup == group.id)) {
+                            this.selectedGroup = groupInfo.groups[0].id;
+                        }
+                    }
                 });
             }
         }).then(() => {
@@ -280,7 +287,7 @@ export class AddonModDataEditPage {
 
         let replace,
             render,
-            template = this.dataHelper.getTemplate(this.data, 'addtemplate', this.fieldsArray);
+            template = this.data.addtemplate || this.dataHelper.getDefaultTemplate('add', this.fieldsArray);
 
         // Replace the fields found on template.
         this.fieldsArray.forEach((field) => {

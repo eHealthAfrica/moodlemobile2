@@ -12,15 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-    Component, Input, Output, OnInit, ViewChild, ElementRef, EventEmitter, OnChanges, SimpleChange, Optional
-} from '@angular/core';
+import { Component, Input, Output, OnInit, ViewChild, ElementRef, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { NavController } from 'ionic-angular';
 import { CoreLoggerProvider } from '@providers/logger';
 import { CoreDomUtilsProvider } from '@providers/utils/dom';
 import { CoreIframeUtilsProvider } from '@providers/utils/iframe';
-import { CoreSplitViewComponent } from '@components/split-view/split-view';
 
 /**
  */
@@ -42,9 +38,7 @@ export class CoreIframeComponent implements OnInit, OnChanges {
     protected IFRAME_TIMEOUT = 15000;
 
     constructor(logger: CoreLoggerProvider, private iframeUtils: CoreIframeUtilsProvider, private domUtils: CoreDomUtilsProvider,
-            private sanitizer: DomSanitizer, private navCtrl: NavController,
-            @Optional() private svComponent: CoreSplitViewComponent) {
-
+            private sanitizer: DomSanitizer) {
         this.logger = logger.getInstance('CoreIframe');
         this.loaded = new EventEmitter<HTMLIFrameElement>();
     }
@@ -61,8 +55,7 @@ export class CoreIframeComponent implements OnInit, OnChanges {
         // Show loading only with external URLs.
         this.loading = !this.src || !!this.src.match(/^https?:\/\//i);
 
-        const navCtrl = this.svComponent ? this.svComponent.getMasterNav() : this.navCtrl;
-        this.iframeUtils.treatFrame(iframe, false, navCtrl);
+        this.iframeUtils.treatFrame(iframe);
 
         if (this.loading) {
             iframe.addEventListener('load', () => {

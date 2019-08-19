@@ -21,7 +21,7 @@ import { CoreDbProvider } from '@providers/db';
 import { CoreEventsProvider } from '@providers/events';
 import { CoreFileProvider } from '@providers/file';
 import { CoreLoggerProvider } from '@providers/logger';
-import { CoreWSProvider, CoreWSPreSets, CoreWSFileUploadOptions, CoreWSAjaxPreSets } from '@providers/ws';
+import { CoreWSProvider, CoreWSPreSets, CoreWSFileUploadOptions } from '@providers/ws';
 import { CoreDomUtilsProvider } from '@providers/utils/dom';
 import { CoreTextUtilsProvider } from '@providers/utils/text';
 import { CoreTimeUtilsProvider } from '@providers/utils/time';
@@ -59,12 +59,6 @@ export interface CoreSiteWSPreSets {
      * @type {boolean}
      */
     emergencyCache?: boolean;
-
-    /**
-     * If true, the app won't call the WS. If the data isn't cached, the call will fail.
-     * @type {boolean}
-     */
-    forceOffline?: boolean;
 
     /**
      * Extra key to add to the cache when storing this call, to identify the entry.
@@ -674,12 +668,7 @@ export class CoreSite {
         }
 
         const promise = this.getFromCache(method, data, preSets, false, originalData).catch(() => {
-            if (preSets.forceOffline) {
-                // Don't call the WS, just fail.
-                return Promise.reject(this.wsProvider.createFakeWSError('core.cannotconnect', true));
-            }
-
-            // Call the WS.
+            // Do not pass those options to the core WS factory.
             return this.callOrEnqueueRequest(method, data, preSets, wsPreSets).then((response) => {
                 if (preSets.saveToCache) {
                     this.saveToCache(method, data, response, preSets);
@@ -1054,7 +1043,7 @@ export class CoreSite {
             const now = Date.now();
             let expirationTime;
 
-            preSets.omitExpires = preSets.omitExpires || preSets.forceOffline || !this.appProvider.isOnline();
+            preSets.omitExpires = preSets.omitExpires || !this.appProvider.isOnline();
 
             if (!preSets.omitExpires) {
                 let expirationDelay = this.UPDATE_FREQUENCIES[preSets.updateFrequency] ||
@@ -1443,22 +1432,7 @@ export class CoreSite {
      * @return {Promise<any>} Promise resolved with public config. Rejected with an object if error, see CoreWSProvider.callAjax.
      */
     getPublicConfig(): Promise<any> {
-        const preSets: CoreWSAjaxPreSets = {
-            siteUrl: this.siteUrl
-        };
-
-        return this.wsProvider.callAjax('tool_mobile_get_public_config', {}, preSets).catch((error) => {
-
-            if ((!this.getInfo() || this.isVersionGreaterEqualThan('3.8')) && error && error.errorcode == 'codingerror') {
-                // This error probably means that there is a redirect in the site. Try to use a GET request.
-                preSets.noLogin = true;
-                preSets.useGet = true;
-
-                return this.wsProvider.callAjax('tool_mobile_get_public_config', {}, preSets);
-            }
-
-            return Promise.reject(error);
-        }).then((config) => {
+        return this.wsProvider.callAjax('tool_mobile_get_public_config', {}, { siteUrl: this.siteUrl }).then((config) => {
             // Use the wwwroot returned by the server.
             if (config.httpswwwroot) {
                 this.siteUrl = config.httpswwwroot;

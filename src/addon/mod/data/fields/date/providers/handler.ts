@@ -15,7 +15,6 @@ import { Injector, Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AddonModDataFieldHandler } from '../../../providers/fields-delegate';
 import { AddonModDataFieldDateComponent } from '../component/date';
-import { CoreTimeUtilsProvider } from '@providers/utils/time';
 
 /**
  * Handler for date data field plugin.
@@ -25,7 +24,7 @@ export class AddonModDataFieldDateHandler implements AddonModDataFieldHandler {
     name = 'AddonModDataFieldDateHandler';
     type = 'date';
 
-    constructor(private translate: TranslateService, private timeUtils: CoreTimeUtilsProvider) { }
+    constructor(private translate: TranslateService) { }
 
     /**
      * Return the Component to use to display the plugin data.
@@ -130,7 +129,7 @@ export class AddonModDataFieldDateHandler implements AddonModDataFieldHandler {
             input = inputData[fieldName] && inputData[fieldName].substr(0, 10) || '';
 
         originalFieldData = (originalFieldData && originalFieldData.content &&
-                this.timeUtils.toDatetimeFormat(originalFieldData.content * 1000).substr(0, 10)) || '';
+                new Date(originalFieldData.content * 1000).toISOString().substr(0, 10)) || '';
 
         return input != originalFieldData;
     }

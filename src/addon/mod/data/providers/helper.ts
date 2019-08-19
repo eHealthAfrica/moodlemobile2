@@ -410,14 +410,10 @@ export class AddonModDataHelperProvider {
      * @param {any[]} fields List of database fields.
      * @return {string} Template HTML.
      */
-    getDefaultTemplate(type: string, fields: any[]): string {
-        if (type == 'listtemplateheader' || type == 'listtemplatefooter') {
-            return '';
-        }
-
+    getDefaultTemplate( type: 'add' | 'list' | 'single' | 'asearch', fields: any[]): string {
         const html = [];
 
-        if (type == 'listtemplate') {
+        if (type == 'list') {
             html.push('##delcheck##<br />');
         }
 
@@ -436,7 +432,7 @@ export class AddonModDataHelperProvider {
             );
         });
 
-        if (type == 'listtemplate') {
+        if (type == 'list') {
             html.push(
                 '<tr class="lastrow">',
                 '<td class="controls template-field cell c0 lastcol" style="" colspan="2">',
@@ -444,7 +440,7 @@ export class AddonModDataHelperProvider {
                 '</td>',
                 '</tr>'
             );
-        } else if (type == 'singletemplate') {
+        } else if (type == 'single') {
             html.push(
                 '<tr class="lastrow">',
                 '<td class="controls template-field cell c0 lastcol" style="" colspan="2">',
@@ -452,7 +448,7 @@ export class AddonModDataHelperProvider {
                 '</td>',
                 '</tr>'
             );
-        } else if (type == 'asearchtemplate') {
+        } else if (type == 'asearch') {
             html.push(
                 '<tr class="searchcontrols">',
                 '<td class="template-field cell c0" style="">Author first name: </td>',
@@ -471,7 +467,7 @@ export class AddonModDataHelperProvider {
             '</div>'
         );
 
-        if (type == 'listtemplate') {
+        if (type == 'list') {
             html.push('<hr />');
         }
 
@@ -585,28 +581,6 @@ export class AddonModDataHelperProvider {
                 return [];
             });
         });
-    }
-
-    /**
-     * Returns the template of a certain type.
-     *
-     * @param {any} data Database object.
-     * @param {string} type Type of template.
-     * @param {any[]} fields List of database fields.
-     * @return {string} Template HTML.
-     */
-    getTemplate(data: any, type: string, fields: any[]): string {
-        let template = data[type] || this.getDefaultTemplate(type, fields);
-
-        // Try to fix syntax errors so the template can be parsed by Angular.
-        template = this.domUtils.fixHtml(template);
-
-        // Add core-link directive to links.
-        template = template.replace(/<a ([^>]*href="[^>]*)>/i, (match, attributes) => {
-            return '<a core-link capture="true" ' + attributes + '>';
-        });
-
-        return template;
     }
 
     /**

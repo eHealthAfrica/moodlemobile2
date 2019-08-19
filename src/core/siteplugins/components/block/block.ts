@@ -27,7 +27,7 @@ import { CoreBlockDelegate } from '@core/block/providers/delegate';
 })
 export class CoreSitePluginsBlockComponent extends CoreBlockBaseComponent implements OnChanges {
     @Input() block: any;
-    @Input() contextLevel: string;
+    @Input() contextLevel: number;
     @Input() instanceId: number;
 
     @ViewChild(CoreSitePluginsPluginContentComponent) content: CoreSitePluginsPluginContentComponent;
@@ -53,10 +53,7 @@ export class CoreSitePluginsBlockComponent extends CoreBlockBaseComponent implem
             if (handler) {
                 this.component = handler.plugin.component;
                 this.method = handler.handlerSchema.method;
-                this.args = {
-                    contextlevel: this.contextLevel,
-                    instanceid: this.instanceId,
-                };
+                this.args = { };
                 this.initResult = handler.initResult;
             }
         }

@@ -18,7 +18,6 @@ import { IonicModule } from 'ionic-angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { CoreComponentsModule } from '@components/components.module';
 import { CoreDirectivesModule } from '@directives/directives.module';
-import { CoreBlockComponentsModule } from '@core/block/components/components.module';
 import { CoreCourseFormatComponent } from './format/format';
 import { CoreCourseModuleComponent } from './module/module';
 import { CoreCourseModuleCompletionComponent } from './module-completion/module-completion';
@@ -34,7 +33,6 @@ import { CoreCourseUnsupportedModuleComponent } from './unsupported-module/unsup
         CoreCourseUnsupportedModuleComponent
     ],
     imports: [
-        CoreBlockComponentsModule,
         CommonModule,
         IonicModule,
         TranslateModule.forChild(),

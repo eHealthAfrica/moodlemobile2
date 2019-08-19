@@ -4,20 +4,27 @@ ion-app.app-root core-rich-text-editor {
     min-height: 200px; /* Just in case vh is not supported */
     min-height: 40vh;
     width: 100%;
-    display: flex;
-    flex-direction: column;
+    position: relative;
+    display: block;
 
+    > div {
+        position: absolute;
+        @include position(0, 0, 0, 0);
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
     .core-rte-editor, .core-textarea {
         padding: 2px;
         margin: 2px;
         width: 100%;
         resize: none;
         background-color: $white;
+        flex-grow: 1;
     }
 
     .core-rte-editor {
-        flex-grow: 1;
-        flex-shrink: 1;
         -webkit-user-select: auto !important;
         word-wrap: break-word;
         overflow-x: hidden;
@@ -41,8 +48,6 @@ ion-app.app-root core-rich-text-editor {
     }
 
     .core-textarea {
-        flex-grow: 1;
-        flex-shrink: 1;
         position: relative;
 
         textarea {
@@ -59,66 +64,33 @@ ion-app.app-root core-rich-text-editor {
     }
 
     div.core-rte-toolbar {
-        display: flex;
+        background: $gray-darker;
+        @include margin(0px, 1px, 15px, 1px);
+        text-align: center;
+        flex-grow: 0;
         width: 100%;
         z-index: 1;
-        flex-grow: 0;
-        flex-shrink: 0;
-        background-color: $white;
-        @include padding(5px, null);
-        border-top: 1px solid $gray;
 
-        ion-slides {
-            width: 240px;
-            flex-grow: 1;
-            flex-shrink: 1;
-        }
-
-        button {
+        .core-rte-buttons {
             display: flex;
-            justify-content: center;
             align-items: center;
-            width: 36px;
-            height: 36px;
-            padding-right: 6px;
-            padding-left: 6px;
-            margin: 0 auto;
-            font-size: 18px;
-            background-color: $white;
-            border-radius: 4px;
-            @include core-transition(background-color, 200ms);
-            color: $text-color;
-            cursor: pointer;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
 
-            &.toolbar-button-enable {
-                width: 100%;
+            button {
+                background: $gray-darker;
+                color: $white;
+                font-size: 1.1em;
+                height: 35px;
+                min-width: 30px;
+                @include padding(null, 3px, null, 3px);
+                @include border-end(qpx, solid, $gray-dark);
+                border-bottom: 1px solid $gray-dark;
+                @include position(-6px, 0, null, null);
+                flex-grow: 1;
+                margin: 0;
             }
-
-            &:active, &[aria-pressed="true"] {
-                background-color: $gray;
-            }
-
-            &.toolbar-arrow {
-                width: 28px;
-                flex-grow: 0;
-                flex-shrink: 0;
-                opacity: 1;
-                @include core-transition(opacity, 200ms);
-
-                &:active {
-                    background-color: $white;
-                }
-
-                &.toolbar-arrow-hidden {
-                    opacity: 0;
-                }
-            }
-        }
-
-        &.toolbar-hidden {
-            visibility: none;
-            height: 0;
-            border: none;
         }
     }
 

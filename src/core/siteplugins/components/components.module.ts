@@ -30,14 +30,12 @@ import { CoreSitePluginsAssignFeedbackComponent } from './assign-feedback/assign
 import { CoreSitePluginsAssignSubmissionComponent } from './assign-submission/assign-submission';
 import { CoreSitePluginsWorkshopAssessmentStrategyComponent } from './workshop-assessment-strategy/workshop-assessment-strategy';
 import { CoreSitePluginsBlockComponent } from '@core/siteplugins/components/block/block';
-import { CoreSitePluginsOnlyTitleBlockComponent } from '@core/siteplugins/components/only-title-block/only-title-block';
 
 @NgModule({
     declarations: [
         CoreSitePluginsPluginContentComponent,
         CoreSitePluginsModuleIndexComponent,
         CoreSitePluginsBlockComponent,
-        CoreSitePluginsOnlyTitleBlockComponent,
         CoreSitePluginsCourseOptionComponent,
         CoreSitePluginsCourseFormatComponent,
         CoreSitePluginsUserProfileFieldComponent,
@@ -61,7 +59,6 @@ import { CoreSitePluginsOnlyTitleBlockComponent } from '@core/siteplugins/compon
         CoreSitePluginsPluginContentComponent,
         CoreSitePluginsModuleIndexComponent,
         CoreSitePluginsBlockComponent,
-        CoreSitePluginsOnlyTitleBlockComponent,
         CoreSitePluginsCourseOptionComponent,
         CoreSitePluginsCourseFormatComponent,
         CoreSitePluginsUserProfileFieldComponent,
@@ -75,7 +72,6 @@ import { CoreSitePluginsOnlyTitleBlockComponent } from '@core/siteplugins/compon
     entryComponents: [
         CoreSitePluginsModuleIndexComponent,
         CoreSitePluginsBlockComponent,
-        CoreSitePluginsOnlyTitleBlockComponent,
         CoreSitePluginsCourseOptionComponent,
         CoreSitePluginsCourseFormatComponent,
         CoreSitePluginsUserProfileFieldComponent,

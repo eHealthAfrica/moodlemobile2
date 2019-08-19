@@ -165,23 +165,6 @@ export class CoreCourseProvider {
     }
 
     /**
-     * Check if the current view in a NavController is a certain course initial page.
-     *
-     * @param {NavController} navCtrl NavController.
-     * @param {number} courseId Course ID.
-     * @return {boolean} Whether the current view is a certain course.
-     */
-    currentViewIsCourse(navCtrl: NavController, courseId: number): boolean {
-        if (navCtrl) {
-            const view = navCtrl.getActive();
-
-            return view && view.id == 'CoreCourseSectionPage' && view.data && view.data.course && view.data.course.id == courseId;
-        }
-
-        return false;
-    }
-
-    /**
      * Get completion status of all the activities in a course for a certain user.
      *
      * @param {number} courseId Course ID.
@@ -272,8 +255,7 @@ export class CoreCourseProvider {
     getCourseBlocks(courseId: number, siteId?: string): Promise<any[]> {
         return this.sitesProvider.getSite(siteId).then((site) => {
             const params = {
-                    courseid: courseId,
-                    returncontents: 1
+                    courseid: courseId
                 },
                 preSets: CoreSiteWSPreSets = {
                     cacheKey: this.getCourseBlocksCacheKey(courseId),
@@ -989,19 +971,6 @@ export class CoreCourseProvider {
         }).finally(() => {
             loading.dismiss();
         });
-    }
-
-    /**
-     * Select a certain tab in the course. Please use currentViewIsCourse() first to verify user is viewing the course.
-     *
-     * @param {string} [name] Name of the tab. If not provided, course contents.
-     * @param {any} [params] Other params.
-     */
-    selectCourseTab(name?: string, params?: any): void {
-        params = params || {};
-        params.name = name || '';
-
-        this.eventsProvider.trigger(CoreEventsProvider.SELECT_COURSE_TAB, params);
     }
 
     /**

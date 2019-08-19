@@ -254,13 +254,13 @@ export class AddonModForumProvider {
     formatDiscussionsGroups(cmId: number, discussions: any[]): Promise<any[]> {
         discussions = this.utils.clone(discussions);
 
-        return this.groupsProvider.getActivityAllowedGroups(cmId).then((result) => {
+        return this.groupsProvider.getActivityAllowedGroups(cmId).then((forumGroups) => {
             const strAllParts = this.translate.instant('core.allparticipants');
             const strAllGroups = this.translate.instant('core.allgroups');
 
             // Turn groups into an object where each group is identified by id.
             const groups = {};
-            result.groups.forEach((fg) => {
+            forumGroups.forEach((fg) => {
                 groups[fg.id] = fg;
             });
 

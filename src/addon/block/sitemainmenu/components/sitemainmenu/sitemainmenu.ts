@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Component, OnInit, Injector, Input } from '@angular/core';
+import { Component, OnInit, Injector } from '@angular/core';
 import { CoreSitesProvider } from '@providers/sites';
 import { CoreCourseProvider } from '@core/course/providers/course';
 import { CoreCourseHelperProvider } from '@core/course/providers/helper';
@@ -28,9 +28,7 @@ import { CoreBlockBaseComponent } from '@core/block/classes/base-block-component
     templateUrl: 'addon-block-sitemainmenu.html'
 })
 export class AddonBlockSiteMainMenuComponent extends CoreBlockBaseComponent implements OnInit {
-    @Input() downloadEnabled: boolean;
-
-    mainMenuBlock: any;
+    block: any;
     siteHomeId: number;
 
     protected fetchContentDefaultError = 'Error getting main menu data.';
@@ -62,9 +60,9 @@ export class AddonBlockSiteMainMenuComponent extends CoreBlockBaseComponent impl
         promises.push(this.courseProvider.invalidateSections(this.siteHomeId));
         promises.push(this.siteHomeProvider.invalidateNewsForum(this.siteHomeId));
 
-        if (this.mainMenuBlock && this.mainMenuBlock.modules) {
+        if (this.block && this.block.modules) {
             // Invalidate modules prefetch data.
-            promises.push(this.prefetchDelegate.invalidateModules(this.mainMenuBlock.modules, this.siteHomeId));
+            promises.push(this.prefetchDelegate.invalidateModules(this.block.modules, this.siteHomeId));
         }
 
         return Promise.all(promises);
@@ -77,11 +75,11 @@ export class AddonBlockSiteMainMenuComponent extends CoreBlockBaseComponent impl
      */
     protected fetchContent(): Promise<any> {
         return this.courseProvider.getSections(this.siteHomeId, false, true).then((sections) => {
-            this.mainMenuBlock = sections.find((section) => section.section == 0);
+            this.block = sections.find((section) => section.section == 0);
 
-            if (this.mainMenuBlock) {
-                this.mainMenuBlock.hasContent = this.courseHelper.sectionHasContent(this.mainMenuBlock);
-                this.courseHelper.addHandlerDataForModules([this.mainMenuBlock], this.siteHomeId);
+            if (this.block) {
+                this.block.hasContent = this.courseHelper.sectionHasContent(this.block);
+                this.courseHelper.addHandlerDataForModules([this.block], this.siteHomeId);
 
                 // Check if Site Home displays announcements. If so, remove it from the main menu block.
                 const currentSite = this.sitesProvider.getCurrentSite(),
@@ -94,15 +92,15 @@ export class AddonBlockSiteMainMenuComponent extends CoreBlockBaseComponent impl
                     hasNewsItem = items.find((item) => { return item == '0'; });
                 }
 
-                if (hasNewsItem && this.mainMenuBlock.modules) {
+                if (hasNewsItem && this.block.modules) {
                     // Remove forum activity (news one only) from the main menu block to prevent duplicates.
                     return this.siteHomeProvider.getNewsForum(this.siteHomeId).then((forum) => {
                         // Search the module that belongs to site news.
-                        for (let i = 0; i < this.mainMenuBlock.modules.length; i++) {
-                            const module = this.mainMenuBlock.modules[i];
+                        for (let i = 0; i < this.block.modules.length; i++) {
+                            const module = this.block.modules[i];
 
                             if (module.modname == 'forum' && module.instance == forum.id) {
-                                this.mainMenuBlock.modules.splice(i, 1);
+                                this.block.modules.splice(i, 1);
                                 break;
                             }
                         }

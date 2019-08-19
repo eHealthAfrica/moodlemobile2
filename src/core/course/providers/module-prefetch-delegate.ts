@@ -795,7 +795,6 @@ export class CoreCourseModulePrefetchDelegate extends CoreDelegate {
      * @param {number} [sectionId] ID of the section the modules belong to.
      * @param {boolean} [refresh] True if it should always check the DB (slower).
      * @param {boolean} [onlyToDisplay] True if the status will only be used to determine which button should be displayed.
-     * @param {boolean} [checkUpdates=true] Whether to use the WS to check updates. Defaults to true.
      * @return {Promise<any>} Promise resolved with an object with the following properties:
      *                                - status (string) Status of the module.
      *                                - total (number) Number of modules.
@@ -804,15 +803,12 @@ export class CoreCourseModulePrefetchDelegate extends CoreDelegate {
      *                                - CoreConstants.DOWNLOADING (any[]) Modules with state DOWNLOADING.
      *                                - CoreConstants.OUTDATED (any[]) Modules with state OUTDATED.
      */
-    getModulesStatus(modules: any[], courseId: number, sectionId?: number, refresh?: boolean, onlyToDisplay?: boolean,
-            checkUpdates: boolean = true): any {
-
+    getModulesStatus(modules: any[], courseId: number, sectionId?: number, refresh?: boolean, onlyToDisplay?: boolean): any {
         const promises = [],
             result: any = {
                 total: 0
             };
-        let status = CoreConstants.NOT_DOWNLOADABLE,
-            promise;
+        let status = CoreConstants.NOT_DOWNLOADABLE;
 
         // Init result.
         result[CoreConstants.NOT_DOWNLOADED] = [];
@@ -820,17 +816,11 @@ export class CoreCourseModulePrefetchDelegate extends CoreDelegate {
         result[CoreConstants.DOWNLOADING] = [];
         result[CoreConstants.OUTDATED] = [];
 
-        if (checkUpdates) {
-            // Check updates in course. Don't use getCourseUpdates because the list of modules might not be the whole course list.
-            promise = this.getCourseUpdatesByCourseId(courseId).catch(() => {
-                // Cannot get updates.
-                return false;
-            });
-        } else {
-            promise = Promise.resolve(false);
-        }
-
-        return promise.then((updates) => {
+        // Check updates in course. Don't use getCourseUpdates because the list of modules might not be the whole course list.
+        return this.getCourseUpdatesByCourseId(courseId).catch(() => {
+            // Cannot get updates.
+            return false;
+        }).then((updates) => {
 
             modules.forEach((module) => {
                 // Check if the module has a prefetch handler.

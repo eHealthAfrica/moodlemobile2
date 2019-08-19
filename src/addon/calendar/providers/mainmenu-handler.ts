@@ -44,7 +44,7 @@ export class AddonCalendarMainMenuHandler implements CoreMainMenuHandler {
         return {
             icon: 'calendar',
             title: 'addon.calendar.calendar',
-            page: this.calendarProvider.canViewMonthInSite() ? 'AddonCalendarIndexPage' : 'AddonCalendarListPage',
+            page: 'AddonCalendarListPage',
             class: 'addon-calendar-handler'
         };
     }

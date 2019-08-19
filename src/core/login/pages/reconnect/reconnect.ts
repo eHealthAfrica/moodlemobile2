@@ -162,13 +162,6 @@ export class CoreLoginReconnectPage {
     }
 
     /**
-     * Forgotten password button clicked.
-     */
-    forgottenPassword(): void {
-        this.loginHelper.forgottenPasswordClicked(this.navCtrl, this.siteUrl, this.credForm.value.username, this.siteConfig);
-    }
-
-    /**
      * An OAuth button was clicked.
      *
      * @param {any} provider The provider that was clicked.

@@ -70,7 +70,14 @@ export class AddonModChatSessionsPage {
 
         return this.groupsProvider.getActivityGroupInfo(this.cmId, false).then((groupInfo) => {
             this.groupInfo = groupInfo;
-            this.groupId = this.groupsProvider.validateGroupId(this.groupId, groupInfo);
+
+            if (groupInfo.groups && groupInfo.groups.length > 0) {
+                if (!groupInfo.groups.find((group) => group.id === this.groupId)) {
+                    this.groupId = groupInfo.groups[0].id;
+                }
+            } else {
+                this.groupId = 0;
+            }
 
             return this.chatProvider.getSessions(this.chatId, this.groupId, this.showAll);
         }).then((sessions) => {

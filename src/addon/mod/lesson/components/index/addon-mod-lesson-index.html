@@ -16,7 +16,7 @@
 
     <core-tabs [hideUntil]="loaded" [selectedIndex]="selectedTab">
         <!-- Index/Preview tab. -->
-        <core-tab [title]="'addon.mod_lesson.preview' | translate" (ionSelect)="indexSelected()">
+        <core-tab [title]="'addon.mod_lesson.preview' | translate">
             <ng-template>
                 <core-course-module-description [description]="description" [component]="component" [componentId]="componentId"></core-course-module-description>
 

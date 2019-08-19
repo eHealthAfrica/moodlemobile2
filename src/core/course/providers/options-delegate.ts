@@ -52,10 +52,10 @@ export interface CoreCourseOptionsHandler extends CoreDelegateHandler {
      * Returns the data needed to render the handler.
      *
      * @param {Injector} injector Injector.
-     * @param {number} course The course.
+     * @param {number} courseId The course ID.
      * @return {CoreCourseOptionsHandlerData|Promise<CoreCourseOptionsHandlerData>} Data or promise resolved with the data.
      */
-    getDisplayData?(injector: Injector, course: any): CoreCourseOptionsHandlerData | Promise<CoreCourseOptionsHandlerData>;
+    getDisplayData?(injector: Injector, courseId: number): CoreCourseOptionsHandlerData | Promise<CoreCourseOptionsHandlerData>;
 
     /**
      * Should invalidate the data to determine if the handler is enabled for a certain course.
@@ -84,10 +84,10 @@ export interface CoreCourseOptionsMenuHandler extends CoreCourseOptionsHandler {
      * Returns the data needed to render the handler.
      *
      * @param {Injector} injector Injector.
-     * @param {number} course The course.
+     * @param {number} courseId The course ID.
      * @return {CoreCourseOptionsMenuHandlerData|Promise<CoreCourseOptionsMenuHandlerData>} Data or promise resolved with data.
      */
-    getMenuDisplayData(injector: Injector, course: any):
+    getMenuDisplayData(injector: Injector, courseId: number):
         CoreCourseOptionsMenuHandlerData | Promise<CoreCourseOptionsMenuHandlerData>;
 }
 
@@ -552,12 +552,16 @@ export class CoreCourseOptionsDelegate extends CoreDelegate {
 
     /**
      * Update handlers for each course.
+     *
+     * @param {string} [siteId] Site ID.
      */
-    updateData(): void {
-        // Update handlers for all courses.
-        for (const courseId in this.coursesHandlers) {
-            const handler = this.coursesHandlers[courseId];
-            this.updateHandlersForCourse(parseInt(courseId, 10), handler.access, handler.navOptions, handler.admOptions);
+    updateData(siteId?: string): void {
+        if (this.sitesProvider.getCurrentSiteId() === siteId) {
+            // Update handlers for all courses.
+            for (const courseId in this.coursesHandlers) {
+                const handler = this.coursesHandlers[courseId];
+                this.updateHandlersForCourse(parseInt(courseId, 10), handler.access, handler.navOptions, handler.admOptions);
+            }
         }
     }
 

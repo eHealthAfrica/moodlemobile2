@@ -149,14 +149,21 @@ export class AddonModDataEntryPage implements OnDestroy {
         }).then((accessData) => {
             this.access = accessData;
 
-            return this.groupsProvider.getActivityGroupInfo(this.data.coursemodule).then((groupInfo) => {
+            return this.groupsProvider.getActivityGroupInfo(this.data.coursemodule, accessData.canmanageentries)
+                    .then((groupInfo) => {
                 this.groupInfo = groupInfo;
-                this.selectedGroup = this.groupsProvider.validateGroupId(this.selectedGroup, groupInfo);
+
+                // Check selected group is accessible.
+                if (groupInfo && groupInfo.groups && groupInfo.groups.length > 0) {
+                    if (!groupInfo.groups.some((group) => this.selectedGroup == group.id)) {
+                        this.selectedGroup = groupInfo.groups[0].id;
+                    }
+                }
             });
         }).then(() => {
             const actions = this.dataHelper.getActions(this.data, this.access, this.entry);
 
-            const template = this.dataHelper.getTemplate(this.data, 'singletemplate', this.fieldsArray);
+            const template = this.data.singletemplate || this.dataHelper.getDefaultTemplate('single', this.fieldsArray);
             this.entryHtml = this.dataHelper.displayShowFields(template, this.fieldsArray, this.entry, this.offset, 'show',
                     actions);
             this.showComments = actions.comments;
@@ -211,10 +218,6 @@ export class AddonModDataEntryPage implements OnDestroy {
 
         promises.push(this.dataProvider.invalidateDatabaseData(this.courseId));
         if (this.data) {
-            if (this.data.comments && this.entry && this.entry.id > 0 && this.commentsEnabled) {
-                promises.push(this.commentsProvider.invalidateCommentsData('module', this.data.coursemodule, 'mod_data',
-                    this.entry.id, 'database_entry'));
-            }
             promises.push(this.dataProvider.invalidateEntryData(this.data.id, this.entryId));
             promises.push(this.groupsProvider.invalidateActivityGroupInfo(this.data.coursemodule));
             promises.push(this.dataProvider.invalidateEntriesData(this.data.id));

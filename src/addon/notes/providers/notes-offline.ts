@@ -26,10 +26,9 @@ export class AddonNotesOfflineProvider {
 
     // Variables for database.
     static NOTES_TABLE = 'addon_notes_offline_notes';
-    static NOTES_DELETED_TABLE = 'addon_notes_deleted_offline_notes';
     protected siteSchema: CoreSiteSchema = {
         name: 'AddonNotesOfflineProvider',
-        version: 2,
+        version: 1,
         tables: [
             {
                 name: AddonNotesOfflineProvider.NOTES_TABLE,
@@ -64,24 +63,6 @@ export class AddonNotesOfflineProvider {
                     }
                 ],
                 primaryKeys: ['userid', 'content', 'created']
-            },
-            {
-                name: AddonNotesOfflineProvider.NOTES_DELETED_TABLE,
-                columns: [
-                    {
-                        name: 'noteid',
-                        type: 'INTEGER',
-                        primaryKey: true
-                    },
-                    {
-                        name: 'deleted',
-                        type: 'INTEGER'
-                    },
-                    {
-                        name: 'courseid',
-                        type: 'INTEGER'
-                    }
-                ]
             }
         ]
     };
@@ -92,7 +73,7 @@ export class AddonNotesOfflineProvider {
     }
 
     /**
-     * Delete an offline note.
+     * Delete a note.
      *
      * @param  {number} userId      User ID the note is about.
      * @param  {string} content     The note content.
@@ -100,38 +81,13 @@ export class AddonNotesOfflineProvider {
      * @param  {string} [siteId]    Site ID. If not defined, current site.
      * @return {Promise<any>}       Promise resolved if deleted, rejected if failure.
      */
-    deleteOfflineNote(userId: number, content: string, timecreated: number, siteId?: string): Promise<any> {
+    deleteNote(userId: number, content: string, timecreated: number, siteId?: string): Promise<any> {
         return this.sitesProvider.getSite(siteId).then((site) => {
             return site.getDb().deleteRecords(AddonNotesOfflineProvider.NOTES_TABLE, {
                 userid: userId,
                 content: content,
                 created: timecreated
             });
-        });
-    }
-
-    /**
-     * Get all offline deleted notes.
-     *
-     * @param  {string} [siteId] Site ID. If not defined, current site.
-     * @return {Promise<any>}    Promise resolved with notes.
-     */
-    getAllDeletedNotes(siteId?: string): Promise<any> {
-        return this.sitesProvider.getSite(siteId).then((site) => {
-            return site.getDb().getRecords(AddonNotesOfflineProvider.NOTES_DELETED_TABLE);
-        });
-    }
-
-    /**
-     * Get course offline deleted notes.
-     *
-     * @param  {number} courseId Course ID.
-     * @param  {string} [siteId] Site ID. If not defined, current site.
-     * @return {Promise<any>}    Promise resolved with notes.
-     */
-    getCourseDeletedNotes(courseId: number, siteId?: string): Promise<any> {
-        return this.sitesProvider.getSite(siteId).then((site) => {
-            return site.getDb().getRecords(AddonNotesOfflineProvider.NOTES_DELETED_TABLE, {courseid: courseId});
         });
     }
 
@@ -288,42 +244,6 @@ export class AddonNotesOfflineProvider {
             return site.getDb().insertRecord(AddonNotesOfflineProvider.NOTES_TABLE, data).then(() => {
                 return data;
             });
-        });
-    }
-
-    /**
-     * Delete a note offline to be sent later.
-     *
-     * @param  {number} noteId   Note ID.
-     * @param  {number} courseId Course ID.
-     * @param  {string} [siteId] Site ID. If not defined, current site.
-     * @return {Promise<any>}    Promise resolved if stored, rejected if failure.
-     */
-    deleteNote(noteId: number, courseId: number, siteId?: string): Promise<any> {
-        return this.sitesProvider.getSite(siteId).then((site) => {
-            const now = this.timeUtils.timestamp();
-            const data = {
-                noteid: noteId,
-                courseid: courseId,
-                deleted: now
-            };
-
-            return site.getDb().insertRecord(AddonNotesOfflineProvider.NOTES_DELETED_TABLE, data).then(() => {
-                return data;
-            });
-        });
-    }
-
-    /**
-     * Undo delete a note.
-     *
-     * @param  {number} noteId   Note ID.
-     * @param  {string} [siteId] Site ID. If not defined, current site.
-     * @return {Promise<any>}    Promise resolved if deleted, rejected if failure.
-     */
-    undoDeleteNote(noteId: number, siteId?: string): Promise<any> {
-        return this.sitesProvider.getSite(siteId).then((site) => {
-            return site.getDb().deleteRecords(AddonNotesOfflineProvider.NOTES_DELETED_TABLE, { noteid: noteId });
         });
     }
 }

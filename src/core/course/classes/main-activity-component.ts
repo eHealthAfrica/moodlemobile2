@@ -63,10 +63,10 @@ export class CoreCourseModuleMainActivityComponent extends CoreCourseModuleMainR
         const zone = injector.get(NgZone);
 
         // Refresh online status when changes.
-        this.onlineObserver = network.onchange().subscribe(() => {
+        this.onlineObserver = network.onchange().subscribe((online) => {
             // Execute the callback in the Angular zone, so change detection doesn't stop working.
             zone.run(() => {
-                this.isOnline = this.appProvider.isOnline();
+                this.isOnline = online;
             });
         });
     }

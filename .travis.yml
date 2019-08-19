@@ -15,7 +15,8 @@ cache:
     - $HOME/.cache/electron-builder
 
 before_script:
-  - npm install npm@latest -g
+  - npm install -g @angular/cli
+  - npm i npm@latest -g
   - gulp
 
 script:

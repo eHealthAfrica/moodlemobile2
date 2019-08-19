@@ -80,10 +80,10 @@ export class CoreGradesCourseOptionHandler implements CoreCourseOptionsHandler {
      * Returns the data needed to render the handler.
      *
      * @param {Injector} injector Injector.
-     * @param {number} course The course.
+     * @param {number} courseId The course ID.
      * @return {CoreCourseOptionsHandlerData|Promise<CoreCourseOptionsHandlerData>} Data or promise resolved with the data.
      */
-    getDisplayData(injector: Injector, course: any): CoreCourseOptionsHandlerData | Promise<CoreCourseOptionsHandlerData> {
+    getDisplayData(injector: Injector, courseId: number): CoreCourseOptionsHandlerData | Promise<CoreCourseOptionsHandlerData> {
         return {
             title: 'core.grades.grades',
             class: 'core-grades-course-handler',

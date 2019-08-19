@@ -204,7 +204,8 @@ export class AddonModAssignIndexComponent extends CoreCourseModuleMainActivityCo
                         this.showNumbers = groupInfo.groups.length == 0 ||
                             this.sitesProvider.getCurrentSite().isVersionGreaterEqualThan('3.5');
 
-                        return this.setGroup(this.groupsProvider.validateGroupId(this.group, groupInfo));
+                        return this.setGroup(this.group || (groupInfo.groups && groupInfo.groups[0] && groupInfo.groups[0].id) ||
+                            0);
                     });
                 }
 

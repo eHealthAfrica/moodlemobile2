@@ -19,7 +19,6 @@ import { CoreContentLinksAction } from '@core/contentlinks/providers/delegate';
 import { CoreCourseProvider } from '@core/course/providers/course';
 import { CoreCourseHelperProvider } from '@core/course/providers/helper';
 import { AddonModLessonProvider } from './lesson';
-import { NavController } from 'ionic-angular';
 
 /**
  * Handler to treat links to lesson index.
@@ -52,10 +51,9 @@ export class AddonModLessonIndexLinkHandler extends CoreContentLinksModuleIndexH
                 /* Ignore the pageid param. If we open the lesson player with a certain page and the user hasn't started
                    the lesson, an error is thrown: could not find lesson_timer records. */
                 if (params.userpassword) {
-                    this.navigateToModuleWithPassword(parseInt(params.id, 10), courseId, params.userpassword, siteId, navCtrl);
+                    this.navigateToModuleWithPassword(parseInt(params.id, 10), courseId, params.userpassword, siteId);
                 } else {
-                    this.courseHelper.navigateToModule(parseInt(params.id, 10), siteId, courseId,
-                        undefined, undefined, undefined, navCtrl);
+                    this.courseHelper.navigateToModule(parseInt(params.id, 10), siteId, courseId);
                 }
             }
         }];
@@ -82,11 +80,9 @@ export class AddonModLessonIndexLinkHandler extends CoreContentLinksModuleIndexH
      * @param {number} courseId Course ID.
      * @param {string} password Password.
      * @param {string} siteId Site ID.
-     * @param {NavController} navCtrl Navigation controller.
      * @return {Promise<any>} Promise resolved when navigated.
      */
-    protected navigateToModuleWithPassword(moduleId: number, courseId: number, password: string, siteId: string,
-                                           navCtrl?: NavController): Promise<any> {
+    protected navigateToModuleWithPassword(moduleId: number, courseId: number, password: string, siteId: string): Promise<any> {
         const modal = this.domUtils.showModalLoading();
 
         // Get the module.
@@ -97,12 +93,11 @@ export class AddonModLessonIndexLinkHandler extends CoreContentLinksModuleIndexH
             return this.lessonProvider.storePassword(parseInt(module.instance, 10), password, siteId).catch(() => {
                 // Ignore errors.
             }).then(() => {
-                return this.courseHelper.navigateToModule(moduleId, siteId, courseId, module.section,
-                    undefined, undefined, navCtrl);
+                return this.courseHelper.navigateToModule(moduleId, siteId, courseId, module.section);
             });
         }).catch(() => {
             // Error, go to index page.
-            return this.courseHelper.navigateToModule(moduleId, siteId, courseId, undefined, undefined, undefined, navCtrl);
+            return this.courseHelper.navigateToModule(moduleId, siteId, courseId);
         }).finally(() => {
             modal.dismiss();
         });

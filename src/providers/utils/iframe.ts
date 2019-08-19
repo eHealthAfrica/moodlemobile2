@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { Injectable, NgZone } from '@angular/core';
-import { Config, Platform, NavController } from 'ionic-angular';
+import { Config, Platform } from 'ionic-angular';
 import { TranslateService } from '@ngx-translate/core';
 import { Network } from '@ionic-native/network';
 import { CoreAppProvider } from '../app';
@@ -191,9 +191,8 @@ export class CoreIframeUtilsProvider {
      * @param {any} element Element to treat (iframe, embed, ...).
      * @param {Window} contentWindow The window of the element contents.
      * @param {Document} contentDocument The document of the element contents.
-     * @param {NavController} [navCtrl] NavController to use if a link can be opened in the app.
      */
-    redefineWindowOpen(element: any, contentWindow: Window, contentDocument: Document, navCtrl?: NavController): void {
+    redefineWindowOpen(element: any, contentWindow: Window, contentDocument: Document): void {
         if (contentWindow) {
             // Intercept window.open.
             contentWindow.open = (url: string, target: string): Window => {
@@ -230,18 +229,13 @@ export class CoreIframeUtilsProvider {
                         this.domUtils.showErrorModal(error);
                     });
                 } else {
-                    // It's an external link, check if it can be opened in the app.
-                    this.contentLinksHelper.handleLink(url, undefined, navCtrl, true, true).then((treated) => {
-                        if (!treated) {
-                            // Not opened in the app, open with browser. Check if we need to auto-login
-                            if (!this.sitesProvider.isLoggedIn()) {
-                                // Not logged in, cannot auto-login.
-                                this.utils.openInBrowser(url);
-                            } else {
-                                this.sitesProvider.getCurrentSite().openInBrowserWithAutoLoginIfSameSite(url);
-                            }
-                        }
-                    });
+                    // It's an external link, we will open with browser. Check if we need to auto-login.
+                    if (!this.sitesProvider.isLoggedIn()) {
+                        // Not logged in, cannot auto-login.
+                        this.utils.openInBrowser(url);
+                    } else {
+                        this.sitesProvider.getCurrentSite().openInBrowserWithAutoLoginIfSameSite(url);
+                    }
                 }
 
                  // We cannot create new Window objects directly, return null which is a valid return value for Window.open().
@@ -254,7 +248,7 @@ export class CoreIframeUtilsProvider {
             CoreIframeUtilsProvider.FRAME_TAGS.forEach((tag) => {
                 const elements = Array.from(contentDocument.querySelectorAll(tag));
                 elements.forEach((subElement) => {
-                    this.treatFrame(subElement, true, navCtrl);
+                    this.treatFrame(subElement, true);
                 });
             });
         }
@@ -266,15 +260,14 @@ export class CoreIframeUtilsProvider {
      *
      * @param {any} element Element to treat (iframe, embed, ...).
      * @param {boolean} [isSubframe] Whether it's a frame inside another frame.
-     * @param {NavController} [navCtrl] NavController to use if a link can be opened in the app.
      */
-    treatFrame(element: any, isSubframe?: boolean, navCtrl?: NavController): void {
+    treatFrame(element: any, isSubframe?: boolean): void {
         if (element) {
             this.checkOnlineFrameInOffline(element, isSubframe);
 
             let winAndDoc = this.getContentWindowAndDocument(element);
             // Redefine window.open in this element and sub frames, it might have been loaded already.
-            this.redefineWindowOpen(element, winAndDoc.window, winAndDoc.document, navCtrl);
+            this.redefineWindowOpen(element, winAndDoc.window, winAndDoc.document);
             // Treat links.
             this.treatFrameLinks(element, winAndDoc.document);
 
@@ -283,7 +276,7 @@ export class CoreIframeUtilsProvider {
 
                 // Element loaded, redefine window.open and treat links again.
                 winAndDoc = this.getContentWindowAndDocument(element);
-                this.redefineWindowOpen(element, winAndDoc.window, winAndDoc.document, navCtrl);
+                this.redefineWindowOpen(element, winAndDoc.window, winAndDoc.document);
                 this.treatFrameLinks(element, winAndDoc.document);
 
                 if (winAndDoc.window) {

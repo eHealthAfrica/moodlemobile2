@@ -47,7 +47,6 @@ export class CoreCoursesDashboardProvider {
     getDashboardBlocks(userId?: number, siteId?: string): Promise<any[]> {
         return this.sitesProvider.getSite(siteId).then((site) => {
             const params = {
-                    returncontents: 1
                 },
                 preSets = {
                     cacheKey: this.getDashboardBlocksCacheKey(userId),

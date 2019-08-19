@@ -269,7 +269,7 @@ export class AddonModFeedbackIndexComponent extends CoreCourseModuleMainActivity
         return this.groupsProvider.getActivityGroupInfo(cmId).then((groupInfo) => {
             this.groupInfo = groupInfo;
 
-            return this.setGroup(this.groupsProvider.validateGroupId(this.group, groupInfo));
+            return this.setGroup(this.group);
         });
     }
 

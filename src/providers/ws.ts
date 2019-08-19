@@ -76,18 +76,6 @@ export interface CoreWSAjaxPreSets {
      * @type {boolean}
      */
     responseExpected?: boolean;
-
-    /**
-     * Whether to use the no-login endpoint instead of the normal one. Use it for requests that don't require authentication.
-     * @type {boolean}
-     */
-    noLogin?: boolean;
-
-    /**
-     * Whether to send the parameters via GET. Only if noLogin is true.
-     * @type {boolean}
-     */
-    useGet?: boolean;
 }
 
 /**
@@ -227,7 +215,8 @@ export class CoreWSProvider {
      *                                 - available: 0 if unknown, 1 if available, -1 if not available.
      */
     callAjax(method: string, data: any, preSets: CoreWSAjaxPreSets): Promise<any> {
-        let promise;
+        let siteUrl,
+            ajaxData;
 
         if (typeof preSets.siteUrl == 'undefined') {
             return rejectWithError(this.createFakeWSError('core.unexpectederror', true));
@@ -239,24 +228,17 @@ export class CoreWSProvider {
             preSets.responseExpected = true;
         }
 
-        const script = preSets.noLogin ? 'service-nologin.php' : 'service.php',
-            ajaxData = JSON.stringify([{
-                index: 0,
-                methodname: method,
-                args: this.convertValuesToString(data)
-            }]);
+        ajaxData = [{
+            index: 0,
+            methodname: method,
+            args: this.convertValuesToString(data)
+        }];
 
         // The info= parameter has no function. It is just to help with debugging.
         // We call it info to match the parameter name use by Moodle's AMD ajax module.
-        let siteUrl = preSets.siteUrl + '/lib/ajax/' + script + '?info=' + method;
+        siteUrl = preSets.siteUrl + '/lib/ajax/service.php?info=' + method;
 
-        if (preSets.noLogin && preSets.useGet) {
-            // Send params using GET.
-            siteUrl += '&args=' + encodeURIComponent(ajaxData);
-            promise = this.http.get(siteUrl).timeout(CoreConstants.WS_TIMEOUT).toPromise();
-        } else {
-            promise = this.http.post(siteUrl, ajaxData).timeout(CoreConstants.WS_TIMEOUT).toPromise();
-        }
+        const promise = this.http.post(siteUrl, JSON.stringify(ajaxData)).timeout(CoreConstants.WS_TIMEOUT).toPromise();
 
         return promise.then((data: any) => {
             // Some moodle web services return null.
