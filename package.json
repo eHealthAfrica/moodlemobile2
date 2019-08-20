@@ -1,7 +1,7 @@
 {
-  "name": "moodlemobile",
+  "name": "elearningmobile",
   "version": "3.7.0",
-  "description": "The official app for Moodle.",
+  "description": "The official eLearning app.",
   "author": {
     "name": "Moodle Pty Ltd.",
     "email": "mobile@moodle.com"
@@ -80,10 +80,9 @@
     "@types/promise.prototype.finally": "2.0.2",
     "chart.js": "2.7.2",
     "com-darryncampbell-cordova-plugin-intent": "1.1.7",
-    "cordova-android": "7.1.2",
+    "cordova-android": "^7.1.4",
     "cordova-android-support-gradle-release": "3.0.0",
     "cordova-clipboard": "1.2.1",
-    "cordova-ios": "4.5.5",
     "cordova-plugin-badge": "0.8.8",
     "cordova-plugin-camera": "4.0.3",
     "cordova-plugin-customurlscheme": "4.3.0",
@@ -141,8 +140,7 @@
   },
   "cordova": {
     "platforms": [
-      "android",
-      "ios"
+      "android"
     ],
     "plugins": {
       "com-darryncampbell-cordova-plugin-intent": {},
@@ -153,7 +151,7 @@
       "cordova-plugin-badge": {},
       "cordova-plugin-camera": {},
       "cordova-plugin-customurlscheme": {
-        "URL_SCHEME": "moodlemobile"
+        "URL_SCHEME": "elearningmobile"
       },
       "cordova-plugin-device": {},
       "cordova-plugin-file": {},
@@ -204,7 +202,7 @@
       {
         "name": "Moodle Mobile URL",
         "schemes": [
-          "moodlemobile"
+          "elearningmobile"
         ],
         "role": "Viewer"
       }
