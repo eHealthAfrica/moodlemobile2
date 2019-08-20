@@ -1209,10 +1209,14 @@ ion-app.app-root.md .input-wrapper{
 }
 
 .button-clear-md, .alert-md .alert-button {
-  color: #128E86 !important;
+  color: #ffffff ;
 }
 
-.select-ios .select-placeholder, .select-md .select-placeholder, .select-wp .select-placeholder, ion-app.app-root ion-select .select-icon .select-icon-inner {
+.button-clear-md:hover, .alert-md .alert-button {
+  color: #ffffff ;
+}
+.select-ios .select-placeholder, .select-md .select-placeholder, .select-wp .select-placeholder,
+ ion-app.app-root ion-select .select-icon .select-icon-inner, ion-app.app-root core-show-password .button[icon-only] {
   color: #128E86;
 }
 .item-md.item-input.item-input-has-focus .item-inner, .item-md.item-input.input-has-focus .item-inner {
