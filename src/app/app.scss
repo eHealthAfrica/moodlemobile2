@@ -1171,8 +1171,22 @@ ion-app.app-root page-core-login-credentials img{
   display: none;
 }
 
-.toolbar-background-md {
+.toolbar-background-md, .fab-md {
   background: #128E86;
+}
+.fab-md.activated{
+  background: #4772A6;;
+}
+ion-app.app-root ion-select, .action-sheet-md .action-sheet-title {
+  color: #128E86;
+}
+
+.toggle-md-primary.toggle-checked .toggle-icon, .toggle-md.toggle-checked .toggle-icon {
+  background-color: rgb(194, 245, 242);
+}
+
+.toggle-md-primary.toggle-checked .toggle-inner, .toggle-md.toggle-checked .toggle-inner {
+  background-color: #128E86;
 }
 
 ion-app.app-root.md .button-md {
@@ -1190,10 +1204,17 @@ ion-app.app-root.md .button-md-light {
   font-weight: 300;
 }
 
-.button-clear-md{
+ion-app.app-root.md .input-wrapper{
+  text-align: left;
+}
+
+.button-clear-md, .alert-md .alert-button {
   color: #128E86 !important;
 }
 
+.select-ios .select-placeholder, .select-md .select-placeholder, .select-wp .select-placeholder, ion-app.app-root ion-select .select-icon .select-icon-inner {
+  color: #128E86;
+}
 .item-md.item-input.item-input-has-focus .item-inner, .item-md.item-input.input-has-focus .item-inner {
   border-bottom-color: #4772A6;
   box-shadow: inset 0 -1px 0 0 #4772A6;
