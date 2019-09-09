@@ -1,5 +1,5 @@
 {
-    "app_id": "com.ehealthafrica.elearningdev",
+    "app_id": "org.ehealthafrica.elearning",
     "appname": "eHA eLearning Mobile",
     "desktopappname": "eLearning Desktop",
     "versioncode": 3700,
@@ -58,7 +58,7 @@
     "wsextservice": "local_mobile",
     "demo_sites": {},
     "customurlscheme": "elearningmobile",
-    "siteurl": "https:\/\/elearning-dev.ehealthafrica.org",
+    "siteurl": "https:\/\/elearning.ehealthafrica.org",
     "sitename": "eLearning",
     "multisitesdisplay": "",
     "skipssoconfirmation": false,

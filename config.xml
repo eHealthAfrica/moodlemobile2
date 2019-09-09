@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.ehealthafrica.elearningdev" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="org.ehealthafrica.elearning" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>eHA eLearning</name>
     <description>eLearning official app</description>
-    <author email="elearning@ehealthafrica.org" href="http://elearning-dev.ehealthafrica.org">eLearning Mobile team</author>
+    <author email="elearning@ehealthafrica.org" href="http://elearning.ehealthafrica.org">eLearning Mobile team</author>
     <content src="index.html" />
     <access origin="*" />
     <access launch-external="yes" origin="tel:*" />
@@ -23,7 +23,7 @@
     <preference name="webviewbounce" value="false" />
     <preference name="AppendUserAgent" value="MoodleMobile" />
     <preference name="android-minSdkVersion" value="19" />
-    <preference name="android-targetSdkVersion" value="26" />
+    <preference name="android-targetSdkVersion" value="28" />
     <preference name="UIWebViewBounce" value="false" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="BackupWebStorage" value="none" />

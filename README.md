@@ -20,3 +20,12 @@ Big Thanks
 Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com)
 
 ![Sauce Labs Logo](https://user-images.githubusercontent.com/557037/43443976-d88d5a78-94a2-11e8-8915-9f06521423dd.png)
+
+Signing The App
+===============
+
+`jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/eha/mm/eha-elearning-key.keystore ./platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk eha_elearning`
+
+Then find the zipalign tool and use it to bundle the app, mine is in the below dir
+
+`~/Library/Android/sdk/build-tools/28.0.2/zipalign -v 4 ./platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk HelloWorld.apk`
